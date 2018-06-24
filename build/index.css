@@ -1,0 +1,241 @@
+body.rama-body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+#rama-entity-filter {
+  position: absolute;
+  padding-left: 5px;
+  /*width: 650px;*/
+  display: inline-block;
+}
+#rama-entity-toggle-button {
+  width: 35px;
+}
+div.rama-tooltip {
+  position: absolute;
+  text-align: center;
+  /*width: 80px;*/
+  /*height: 50px;*/
+  padding: 2px;
+  font: 12px sans-serif;
+  background: rgb(200, 200, 200);
+  border: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 1;
+}
+#rama-radio-buttons-container {
+  padding: 0 5px 0 2px;
+  display: inline;
+}
+#rama-chain-toggle{
+  position: absolute;
+  padding: 0 20px 0 5px;
+  min-width: 20px;
+}
+#rama-form-div {
+  padding: 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 40px;
+}
+.form-group {
+  width: 80%;
+  padding-right: 2px;
+}
+
+td#rama-td {
+  text-align: left;
+}
+div.outliers-container {
+  height: 500px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  margin-top: 0;
+}
+
+#rama-plottype-div {
+    min-width: 180px;
+}
+.rama-outliers-table{
+  width: 100%;
+}
+.rama-outliers-headline {
+  text-align: center;
+}
+#rama-chain-toggle-div {
+    padding-left: 2px;
+}
+.rama-table-headline {
+  text-align: left;
+}
+.rama-grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.rama-grid path {
+  stroke-width: 0;
+}
+#rama-chain-select {
+  padding: 0 2px 0 2px;
+}
+#rama-svg-container {
+  /*width: 100%;*/
+  max-width: 550px;
+  /*height: 100%;*/
+  position: absolute;
+  margin: 10px 0 0 10px;
+  border: 1px solid #7c827e;
+}
+.rama-set-cl {
+  border-top: 1px solid #7c827e;
+  background-color: #DCECD7;
+}
+#rama-settings {
+  font-size: smaller;
+}
+#rama-sum-table {
+  width: 100%;
+  font-style: italic;
+}
+#rama-sum {
+  margin-top: 10px;
+  padding: 2px 0 2px 10px;
+  display: inline-block;
+  width: 100%;
+}
+#rama-sum-div {
+  font-size: smaller;
+  width: 100%;
+}
+.rama-sum-cell {
+  display: inline-block;
+  width: 100%;
+  font-style: italic;
+}
+
+canvas#rama-canvas {
+  padding: 30px 30px 30px 50px;
+  width: 100%;
+}
+#rama-contour-style {
+  display: inline-block;
+}
+
+#rama-coloring {
+  margin: 5px;
+}
+
+#rama-plot-type {
+  margin-right: 5px;
+}
+
+.rama-contour-radio {
+  margin: 5px;
+}
+
+.svg-container {
+  /*display: inline-block;*/
+  position: absolute;
+  /*width: 100%;*/
+  /*padding-bottom: 100%; !* aspect ratio *!*/
+  vertical-align: top;
+  overflow: visible;
+  /*padding: 30px 30px 30px 50px;*/
+  margin: 30px 30px 30px 50px;
+}
+/*#rama-canvas-container{*/
+  /*width: 100%;*/
+/*}*/
+
+label.btn.btn-default {
+  width: 50%;
+}
+div.btn-toolbar {
+  width: 180px;
+}
+div.btn-group {
+width: 100%;
+}
+button.dropdown-toggle {
+  width: 100%;
+}
+.rama-outliers-div {
+  width: 50%;
+  padding: 5px 1% 0 1%;
+  position: absolute;
+  top: 800px;
+}
+#rama-drawing-style-div{
+  min-width: 100px;
+  padding-right: 2px;
+}
+
+@media only screen and (min-width: 768px) {
+  /* For desktop: */
+  .rama-root {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    max-height: 500px;
+  }
+  .rama-outliers-div {
+    width: 50%;
+    padding: 5px 1% 0 1%;
+    position: absolute;
+    left: 700px;
+    top: 50px;
+  }
+
+  div.outliers-container {
+    height: 500px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: 0;
+  }
+  .rama-outliers-div {
+    width: 25%;
+    padding: 5px 3% 0 1%;
+  }
+  .rama-outliers-table{
+    width: 100%;
+  }
+  .rama-outliers-headline {
+    text-align: center;
+  }
+  .rama-table-headline {
+    text-align: left;
+  }
+  #rama-canvas-container {
+    position: absolute;
+  }
+  #rama-radio-buttons-container {
+    display: inline;
+    /*padding: 1px;*/
+    /*width: 40%;*/
+  }
+  #rama-form-div {
+    justify-content: space-between;
+  }
+  .form-group {
+    width: 80%;
+    padding-right: 2px;
+  }
+  #rama-sum-widest {
+    width: 39%;
+  }
+  #rama-sum-middle {
+    width: 35%;
+  }
+  #rama-sum-thinnest {
+    width: 25%;
+    text-align: right;
+  }
+  /*rama-type-dropdown {*/
+    /*max-width: 30%;*/
+  /*}*/
+}
