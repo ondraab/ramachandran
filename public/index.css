@@ -83,11 +83,15 @@ div.outliers-container {
 #rama-chain-select {
   padding: 0 2px 0 2px;
 }
+
+#rama-svg {
+  max-width: 468px;
+}
 #rama-svg-container {
   /*width: 100%;*/
   max-width: 550px;
   /*height: 100%;*/
-  position: absolute;
+  /*position: absolute;*/
   margin: 10px 0 0 10px;
   border: 1px solid #7c827e;
 }
@@ -139,18 +143,11 @@ canvas#rama-canvas {
 }
 
 .svg-container {
-  /*display: inline-block;*/
   position: absolute;
-  /*width: 100%;*/
-  /*padding-bottom: 100%; !* aspect ratio *!*/
   vertical-align: top;
   overflow: visible;
-  /*padding: 30px 30px 30px 50px;*/
   margin: 30px 30px 30px 50px;
 }
-/*#rama-canvas-container{*/
-  /*width: 100%;*/
-/*}*/
 
 label.btn.btn-default {
   width: 50%;
