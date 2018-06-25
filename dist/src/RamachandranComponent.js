@@ -82,58 +82,73 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.createChart();
         }
     }, {
-        key: "createChart",
+        key: "fillColorFunction",
+        value: function fillColorFunction(d, drawingType, outliersType, rsrz) {
+            var compute = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
 
-        // public componentWillUpdate(nextProps: any, nextState: any) {
-        //
-        //     if (nextProps.pdbID !== this.state.pdb || nextProps.chainsToShow !== this.state.chainsToShow ||
-        //         nextProps.modelsToShow !== this.state.modelsToShow) {
-        //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-        //             nextProps.residueColorStyle);
-        //         // console.log(nextProps.contourColoringStyle, this.state.contourColoringStyle);
-        //     }
-        //     if (nextProps.ramaContourPlotType !== this.state.ramaContourPlotType) {
-        //         // this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-        //         //                  nextProps.residueColorStyle);
-        //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-        //             nextProps.residueColorStyle);
-        //         this.basicContours(nextProps.ramaContourPlotType, nextProps.contourColoringStyle);
-        //     } else if (nextProps.residueColorStyle !== this.state.residueColorStyle) {
-        //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-        //             nextProps.residueColorStyle);
-        //     } else if (nextProps.contourColoringStyle !== this.state.contourColoringStyle) {
-        //         // console.log(nextProps.contourColoringStyle, this.state.contourColoringStyle);
-        //         this.basicContours(nextProps.ramaContourPlotType, nextProps.contourColoringStyle);
-        //     }
-        //
-        // }
-        // public shouldComponentUpdate(nextProps: any, nextState: any) {
-        //     if (nextState.pdb.length === 4 && nextProps.pdbID !== this.state.pdb)  {
-        //         return true;
-        //     }
-        //     if (nextProps.ramaContourPlotType !== this.state.ramaContourPlotType) {
-        //         return true;
-        //     }
-        //     if (nextProps.contourColoringStyle !== this.state.contourColoringStyle) {
-        //         return true;
-        //     }
-        //     if (nextProps.modelsToShow.length !== this.state.modelsToShow.length) {
-        //         return true;
-        //     }
-        //     if (nextProps.residueColorStyle !== this.state.residueColorStyle) {
-        //         return true;
-        //     }
-        //     return nextProps.chainsToShow.length !== this.state.chainsToShow.length;
-        // }
+            switch (drawingType) {
+                case 1:
+                    if (d.rama === 'OUTLIER') {
+                        return '#f00';
+                    }
+                    return 'black';
+                case 2:
+                    if (typeof outliersType[d.num] === 'undefined') {
+                        return '#008000';
+                    } else {
+                        if (compute === true) {
+                            if (outliersType[d.num].outliersType.includes('clashes')) {
+                                this.clashes++;
+                            }
+                            if (outliersType[d.num].outliersType.includes('ramachandran_outliers')) {
+                                this.ramachandranOutliers++;
+                            }
+                            if (outliersType[d.num].outliersType.includes('sidechain_outliers')) {
+                                this.sidechainOutliers++;
+                            }
+                        }
+                        switch (outliersType[d.num].outliersType.length) {
+                            case 0:
+                                return '#008000';
+                            case 1:
+                                return '#ff0';
+                            case 2:
+                                return '#f80';
+                            default:
+                                return '#850013';
+                        }
+                    }
+                case 3:
+                    if (typeof rsrz[d.num] === 'undefined') {
+                        return 'black';
+                    } else {
+                        if (compute === true) {
+                            this.rsrzCount++;
+                        }
+                        return '#f00';
+                    }
+                default:
+                    break;
+            }
+        }
+    }, {
+        key: "opacityFunction",
+        value: function opacityFunction(fillTmp) {
+            if (fillTmp === '#008000' || fillTmp === 'black') {
+                return 0.15;
+            }
+            if (fillTmp === '#ff0') {
+                return 0.8;
+            }
+            return 1;
+        }
+    }, {
+        key: "createChart",
         value: function createChart() {
             var _this3 = this;
 
             var width = 500,
                 height = 500;
-            // let element = document.getElementById('rama-root');
-            // const node = document.createElement('div');
-            // node.setAttribute('id', 'ramachandran-root-element');
-            // element.appendChild(node);
             if (width > 768) {
                 width = 580;
             }
@@ -231,56 +246,6 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.basicContours(this.ramaContourPlotType, this.contourColoringStyle);
         }
     }, {
-        key: "fillColorFunction",
-        value: function fillColorFunction(d, drawingType, outliersType, rsrz) {
-            var compute = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-
-            switch (drawingType) {
-                case 1:
-                    if (d.rama === 'OUTLIER') {
-                        return '#f00';
-                    }
-                    return 'black';
-                case 2:
-                    if (typeof outliersType[d.num] === 'undefined') {
-                        return '#008000';
-                    } else {
-                        if (compute === true) {
-                            if (outliersType[d.num].outliersType.includes('clashes')) {
-                                this.clashes++;
-                            }
-                            if (outliersType[d.num].outliersType.includes('ramachandran_outliers')) {
-                                this.ramachandranOutliers++;
-                            }
-                            if (outliersType[d.num].outliersType.includes('sidechain_outliers')) {
-                                this.sidechainOutliers++;
-                            }
-                        }
-                        switch (outliersType[d.num].outliersType.length) {
-                            case 0:
-                                return '#008000';
-                            case 1:
-                                return '#ff0';
-                            case 2:
-                                return '#f80';
-                            default:
-                                return '#850013';
-                        }
-                    }
-                case 3:
-                    if (typeof rsrz[d.num] === 'undefined') {
-                        return 'black';
-                    } else {
-                        if (compute === true) {
-                            this.rsrzCount++;
-                        }
-                        return '#f00';
-                    }
-                default:
-                    break;
-            }
-        }
-    }, {
         key: "updateChart",
         value: function updateChart(chainsToShow, ramaContourPlotType, entityToShow, drawingType) {
             this.svgContainer.selectAll('g.dataGroup').remove();
@@ -290,7 +255,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 fillColorFunction = this.fillColorFunction,
                 outliersType = this.outliersType,
                 rsrz = this.rsrz,
-                highlightedResidues = this.highlightedResidues;
+                opacityFunction = this.opacityFunction;
+            var highlightedResidues = this.highlightedResidues;
 
             if (width > 768) {
                 width = 580;
@@ -507,14 +473,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             .style('fill', function (d) {
                 return fillColorFunction(d, drawingType, outliersType, rsrz, true);
             }).style('opacity', function (d) {
-                var fillTmp = fillColorFunction(d, drawingType, outliersType, rsrz);
-                if (fillTmp === '#008000' || fillTmp === 'black') {
-                    return 0.15;
-                }
-                if (fillTmp === '#ff0') {
-                    return 0.8;
-                }
-                return 1;
+                return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
             }).on('mouseover', function (d) {
                 var height = 58;
                 var width = 90;
@@ -578,9 +537,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 tooltip.transition().style('opacity', .95).style('left', d3.event.pageX + 10 + 'px').style('top', d3.event.pageY - 48 + 'px').style('height', height).style('width', String(width) + 'px');
                 d3.select(this).attr('d', function (d) {
                     return changeObjectSize(d, false);
-                }).style('fill', function (dat) {
-                    return fillColorFunction(dat, drawingType, outliersType, rsrz);
-                });
+                }).style('fill', 'yellow').style('opacity', 1);
+                // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
             }).on('mouseout', function (d) {
                 dispatchCustomEvent('PDB.ramaViewer.mouseOut', d);
                 if (highlightedResidues.indexOf(d) > -1) {
@@ -594,31 +552,36 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 // .style('fill', 'transparent')
                 .style('fill', function (d) {
                     return fillColorFunction(d, drawingType, outliersType, rsrz);
+                }).style('opacity', function (d) {
+                    return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
                 });
                 // .style('fillColorFunction-width', '0.5');
                 tooltip.transition()
                 // .duration(50)
                 .style('opacity', 0);
             }).on('click', function (d) {
-                if (highlightedResidues.indexOf(d) > -1) {
-                    unHighlightObject(true);
-                    return;
+                if (highlightedResidues.length != 0) {
+                    highlightedResidues.forEach(function (d) {
+                        d3.select('#' + d.idSlector).attr('d', function (d) {
+                            return changeObjectSize(d);
+                        }).transition().duration(50).style('fill', function (dat) {
+                            return fillColorFunction(dat, drawingType, outliersType, rsrz);
+                        }).style('opacity', function (d) {
+                            return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                        });
+                    });
+                    highlightedResidues.pop();
                 }
-                unHighlightObject(true);
                 dispatchCustomEvent('PDB.ramaViewer.click', d);
                 highlightedResidues.push(d);
                 d3.select(this).attr('d', function (d) {
                     return changeObjectSize(d, false);
-                }).style('fill', function (dat) {
-                    return fillColorFunction(dat, drawingType, outliersType, rsrz);
-                });
+                }).style('fill', 'magenta').style('opacity', 1);
+                // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
             });
             outliersList.sort(function (a, b) {
                 return a.num - b.num;
             });
-            // this.setState({
-            //     initial: false
-            // });
             this.firstRun = false;
             switch (drawingType) {
                 case 1:
@@ -640,59 +603,6 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 default:
                     return;
             }
-            // const butt = d3.select('div#ramachandran-root-element').append('button').text('OK');
-            // butt.on('mouseover', () => {
-            //     unHighlightObject(false);
-            //     d3.select('path#ASN-A-1-14').attr('d', (dat: any) => {
-            //         if (dat.aa === 'GLY') {
-            //             symbolTypes.triangle.size(175);
-            //             return symbolTypes.triangle();
-            //         }
-            //         symbolTypes.circle.size(175);
-            //         return symbolTypes.circle();
-            //     });
-            // }).on('mouseout', (d: any) => {
-            //     unHighlightObject(false);
-            // });
-            //
-            // const butt2 = d3.select('div#ramachandran-root-element').append('button').text('OK');
-            // butt2.on('mouseover', () => {
-            //     unHighlightObject(false);
-            //     d3.select('path#VAL-A-1-26').attr('d', (dat: any) => {
-            //         if (dat.aa === 'GLY') {
-            //             symbolTypes.triangle.size(175);
-            //             return symbolTypes.triangle();
-            //         }
-            //         symbolTypes.circle.size(175);
-            //         return symbolTypes.circle();
-            //     });
-            // }).on('mouseout', (d: any) => {
-            //     unHighlightObject(false);
-            // });
-            //
-            // const butt3 = d3.select('div#ramachandran-root-element').append('button').text('OK');
-            // butt3.on('click', () => {
-            //     const res = d3.select('path#TRP-A-1-87');
-            //     if (highlightedResidues.indexOf(res) > -1) {
-            //         unHighlightObject(true);
-            //         return;
-            //     }
-            //     unHighlightObject(true);
-            //     highlightedResidues.push(res);
-            //     highLightObject(event);
-            // }).on('mouseover', () => {
-            //     unHighlightObject(false);
-            //     d3.select('path#TRP-A-1-87').attr('d', (dat: any) => {
-            //         if (dat.aa === 'GLY') {
-            //             symbolTypes.triangle.size(175);
-            //             return symbolTypes.triangle();
-            //         }
-            //         symbolTypes.circle.size(175);
-            //         return symbolTypes.circle();
-            //     });
-            // }).on('mouseout', (d: any) => {
-            //     unHighlightObject(false);
-            // });
             function changeObjectSize(d) {
                 var smaller = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
@@ -707,69 +617,35 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 symbolTypes.circle.size(size);
                 return symbolTypes.circle();
             }
-            function unHighlightObject() {
-                var all = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
-                if (all) {
+            function unHighlightObject(event) {
+                if (highlightedResidues.indexOf(getRes(event)) == -1) {
+                    d3.select('.selected-res').classed('selected-res', false).attr('d', function (d) {
+                        return changeObjectSize(d);
+                    }).transition().duration(50).style('fill', function (d) {
+                        return fillColorFunction(d, drawingType, outliersType, rsrz, true);
+                    }).style('opacity', function (d) {
+                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                    });
+                }
+            }
+            function onClick(event) {
+                var res = getRes(event);
+                if (highlightedResidues.length != 0) {
                     highlightedResidues.forEach(function (d) {
-                        d3.select('#' + d._idSlector).attr('d', function (d) {
+                        d.attr('d', function (d) {
                             return changeObjectSize(d);
-                        }).transition().duration(50);
+                        }).transition().duration(50).style('fill', function (dat) {
+                            return fillColorFunction(dat, drawingType, outliersType, rsrz);
+                        }).style('opacity', function (d) {
+                            return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                        });
                     });
                     highlightedResidues.pop();
-                    return;
                 }
-                d3.selectAll('path').filter(function (d) {
-                    if (d) {
-                        if (highlightedResidues.indexOf(d) === -1) {
-                            return d;
-                        }
-                    }
-                }).each(function (d) {
-                    return d;
-                }).attr('d', function (d) {
-                    return changeObjectSize(d);
-                }).transition().duration(50);
-                // if (!all) {
-                //     d3.selectAll('path').filter((d: any) => {
-                //         if (d) {
-                //             if (d.spProp === true) {
-                //                 d.spProp = false;
-                //                 return d;
-                //             }
-                //         }
-                //     }).each((d) => d).attr('d', (d: any) => changeObjectSize(d)).transition().duration(50);
-                // }
-                // highlightedResidues.forEach((d: any) => {
-                //     if (all && d.spProp) {
-                //         d.spProp = false;
-                //         return;
-                //     }
-                //     d3.select('#' + d._idSlector).attr('d', (d: any) => changeObjectSize(d)).transition().duration(50);
-                // });
-                // d3.selectAll('path').filter((d: any) => {
-                //     if (d) {
-                //         if (all) {
-                //             if (d.spProp) {
-                //                 d.spProp = false;
-                //             }
-                //             return d;
-                //         }
-                //         if (d.spProp === false) {
-                //             return d;
-                //         }
-                //     }
-                // }).each((d) => d).attr('d', (dat: any) => {
-                //     if (dat) {
-                //         // console.log(dat.aa);
-                //         if (dat.aa === 'GLY') {
-                //             symbolTypes.triangle.size(objSize);
-                //             return symbolTypes.triangle();
-                //         }
-                //         symbolTypes.circle.size(objSize);
-                //         return symbolTypes.circle();
-                //     }
-                // }).transition().duration(50);
+                highlightedResidues.push(res);
+                getRes(event).attr('d', function (d) {
+                    return changeObjectSize(d, false);
+                }).classed('selected-res', false).style('fill', 'magenta').style('opacity', '1');
             }
             function getRes(event) {
                 return d3.select('path#' + event.eventData.residuesName + '-' + event.eventData.chainId + '-' + event.eventData.entityId + '-' + event.eventData.residueNumber);
@@ -778,23 +654,20 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 // highlightedResidues.push(res);
                 getRes(event).attr('d', function (d) {
                     return changeObjectSize(d, false);
-                }).style('fill', function (dat) {
-                    return fillColorFunction(dat, drawingType, outliersType, rsrz);
-                });
+                }).classed('selected-res', true).style('fill', 'yellow').style('opacity', '1');
+                // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
             }
             window.addEventListener('PDB.litemol.mouseover', function (event) {
-                unHighlightObject(false);
-                highLightObject(event);
+                if (typeof event.eventData.residuesName != 'undefined') {
+                    if (highlightedResidues.indexOf(getRes(event)) > -1) {
+                        return;
+                    }
+                    unHighlightObject(event);
+                    highLightObject(event);
+                }
             });
             window.addEventListener('PDB.litemol.click', function (event) {
-                var res = getRes(event);
-                if (highlightedResidues.indexOf(res) > -1) {
-                    unHighlightObject(true);
-                    return;
-                }
-                unHighlightObject(true);
-                highlightedResidues.push(res);
-                highLightObject(event);
+                onClick(event);
             });
             window.addEventListener('PDB.litemol.mouseout', function (event) {
                 if (highlightedResidues.indexOf(event) > -1) {
@@ -803,18 +676,13 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 unHighlightObject(false);
             });
             window.addEventListener('PDB.topologyViewer.click', function (event) {
-                var res = getRes(event);
-                if (highlightedResidues.indexOf(res) > -1) {
-                    unHighlightObject(true);
-                    return;
-                }
-                unHighlightObject(true);
-                highlightedResidues.push(res);
-                highLightObject(event);
+                onClick(event);
             });
             window.addEventListener('PDB.topologyViewer.mouseover', function (event) {
-                unHighlightObject(false);
-                highLightObject(event);
+                if (typeof event.eventData.residuesName != 'undefined') {
+                    unHighlightObject(event);
+                    highLightObject(event);
+                }
             });
             window.addEventListener('PDB.topologyViewer.mouseout', function () {
                 if (highlightedResidues.indexOf(event) > -1) {

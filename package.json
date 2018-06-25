@@ -6,7 +6,7 @@
   "repository": "https://github.com/PolymerLabs/polymer-3-first-element.git",
   "author": "Ondřej Balcárek",
   "scripts": {
-    "start": "webpack-dev-server --config webpack.config.dev.js",
+    "start": "webpack-dev-server --config webpack.config.dev.js --debug",
     "build": "webpack --config webpack.config.prod.js"
   },
   "dependencies": {
