@@ -1,12 +1,12 @@
-#<ramachandran-component>
+# &lt;ramachandran-component&gt;
 
 This component is for interactive visualisation of ramachandram plots.
 
-###Try it
+## Try it
 
 Working example can be found in `build` folder
 
-###Use
+## Use
 Include `bundle.js` file into the html page:
 ```
 <script src="bundle.js"></script>
