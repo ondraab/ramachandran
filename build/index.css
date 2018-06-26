@@ -89,10 +89,10 @@ div.outliers-container {
 }
 #rama-svg-container {
   /*width: 100%;*/
-  max-width: 550px;
+  max-width: 500px;
   /*height: 100%;*/
   /*position: absolute;*/
-  margin: 10px 0 0 10px;
+  margin: 10px 0 0 5px;
   border: 1px solid #7c827e;
 }
 .rama-set-cl {

@@ -771,11 +771,14 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         }
         window.addEventListener('PDB.litemol.mouseover', (event) => {
             if (typeof event.eventData.residuesName != 'undefined') {
-                if (highlightedResidues.indexOf(getRes(event)) > -1) {
+                if (getRes(event).attr('style').includes('magenta')) {
                     return;
                 }
                 unHighlightObject(event);
                 highLightObject(event);
+            }
+            else {
+                unHighlightObject(event);
             }
         });
         window.addEventListener('PDB.litemol.click', (event) => {

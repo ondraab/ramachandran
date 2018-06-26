@@ -863,11 +863,16 @@ class RamachandranComponent extends PolymerElement {
 
         window.addEventListener('PDB.litemol.mouseover', (event: any) => {
             if (typeof event.eventData.residuesName != 'undefined') {
-                if (highlightedResidues.indexOf(getRes(event)) > -1) {
+
+                if (getRes(event).attr('style').includes('magenta')) {
                     return;
                 }
+
                 unHighlightObject(event);
                 highLightObject(event);
+            }
+            else {
+                unHighlightObject(event);
             }
         });
 

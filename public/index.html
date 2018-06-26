@@ -12,15 +12,6 @@
     <link rel="stylesheet" type="text/css" href="../node_modules/pdb-topology-viewer/build/pdb.topology.viewer.min.css">
     <script src="../node_modules/pdb-topology-viewer/build/pdb.topology.viewer.min.js"></script>
 
-    <!--<script>-->
-        <!--(function () {-->
-            <!--'use strict';-->
-            <!--angular.element(document).ready(function () {-->
-                <!--angular.bootstrap(document, ['pdb.topology.viewer']);-->
-            <!--});-->
-        <!--}());-->
-      <!--</script>-->
-
     <script>
         (function () {
             'use strict';
@@ -32,9 +23,10 @@
 
   </head>
   <body>
-  <!--<pdb-topology-viewer entry-id="1aqd" entity-id="1"></pdb-topology-viewer>-->
-  <div></div>
-  <div style="position:absolute;height:400px;width:500px;margin-left: 600px;margin-top: 10px;">
+  <div style="position:absolute;height:400px;width:500px;margin-top: 10px; margin-left: 1015px">
+  <pdb-topology-viewer entry-id="1tqn" entity-id="1"></pdb-topology-viewer>
+  </div>
+  <div style="position:absolute;height:400px;width:500px;margin-left: 510px;margin-top: 10px;">
     <pdb-lite-mol pdb-id="'1tqn'" is-expanded="false"></pdb-lite-mol>
   </div>
     <ramachandran-component pdb-id="1tqn" chains-to-show='["A"]' models-to-show='["1"]' style="position: absolute;"></ramachandran-component>
