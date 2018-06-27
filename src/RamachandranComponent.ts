@@ -386,6 +386,9 @@ class RamachandranComponent extends PolymerElement {
         let width = 500;
         const tooltip = this.tooltip;
         const { jsonObject, fillColorFunction, outliersType, rsrz, opacityFunction} = this;
+        const clickEvents = ['PDB.litemol.click', 'PDB.topologyViewer.click'];
+        const mouseOverEvents = ['PDB.litemol.mouseover', 'PDB.topologyViewer.mouseover'];
+        const mouseOutEvents = ['PDB.topologyViewer.mouseout', 'PDB.litemol.mouseout'];
         let { highlightedResidues } = this;
         if (width > 768) {
             width = 580;
@@ -600,7 +603,7 @@ class RamachandranComponent extends PolymerElement {
             .attr('class', 'dataGroup')
             .append('path')
             .attr('id', (d) => {
-                const id = d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num;
+                const id = d.chain + '-' + d.modelId + '-' + d.num;
                 d.idSlector = id;
                 if (drawingType !== 3) {
                     if (d.rama === 'OUTLIER') {
@@ -815,19 +818,22 @@ class RamachandranComponent extends PolymerElement {
         }
 
         function unHighlightObject(event: any) {
-            if (highlightedResidues.indexOf(getRes(event)) == -1) {
-                d3.select('.selected-res')
-                    .classed('selected-res', false)
-                    .attr('d', (d: any) => changeObjectSize(d)).transition().duration(50)
-                    .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz, true))
-                    .style('opacity', (d) => {
-                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz))
-                    });
+            if (typeof event.eventData != 'undefined') {
+                if (highlightedResidues.indexOf(getResidueNode(event)) == -1) {
+                    d3.select('.selected-res')
+                        .classed('selected-res', false)
+                        .attr('d', (d: any) => changeObjectSize(d)).transition().duration(50)
+                        .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz, true))
+                        .style('opacity', (d) => {
+                            return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz))
+                        });
+                }
             }
         }
 
+
         function onClick(event: any) {
-            const res = getRes(event);
+            const res = getResidueNode(event);
             if (highlightedResidues.length != 0) {
                 highlightedResidues.forEach((d: any) => {
                     d.attr('d', (d: any) => changeObjectSize(d)).transition().duration(50)
@@ -839,70 +845,75 @@ class RamachandranComponent extends PolymerElement {
                 highlightedResidues.pop();
             }
             highlightedResidues.push(res);
-            getRes(event).attr('d', (d: any) => changeObjectSize(d, false))
+            getResidueNode(event).attr('d', (d: any) => changeObjectSize(d, false))
                 .classed('selected-res', false)
                 .style('fill', 'magenta')
                 .style('opacity', '1');
         }
 
-        function getRes(event: any) {
-            return d3.select('path#' + event.eventData.residuesName + '-' +
+        function getResidueNode(event: any) {
+            return d3.select('path#' +
                 event.eventData.chainId + '-' +
                 event.eventData.entityId + '-' +
                 event.eventData.residueNumber);
         }
 
         function highLightObject(event: any) {
-            // highlightedResidues.push(res);
-            getRes(event).attr('d', (d: any) => changeObjectSize(d, false))
+            getResidueNode(event).attr('d', (d: any) => changeObjectSize(d, false))
                 .classed('selected-res', true)
                 .style('fill', 'yellow')
                 .style('opacity', '1');
                 // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
         }
 
-        window.addEventListener('PDB.litemol.mouseover', (event: any) => {
-            if (typeof event.eventData.residuesName != 'undefined') {
+        clickEvents.forEach((type: string) => {
+            window.addEventListener(type, (event: any) => {
+                onClick(event);
+            });
+        });
 
-                if (getRes(event).attr('style').includes('magenta')) {
-                    return;
+        let scrollTimer, lastScrollFireTime = 0;
+        mouseOverEvents.forEach((type: string) => {
+            window.addEventListener(type, (event: any) => {
+                const minMouseOverTime = 300;
+                let now = new Date().getTime();
+
+                function mouseOver(event: any) {
+                    if (typeof event.eventData != 'undefined') {
+                        if (getResidueNode(event).attr('style').includes('magenta')) {
+                            return;
+                        }
+                        unHighlightObject(event);
+                        highLightObject(event);
+                    }
+                    else {
+                        unHighlightObject(event);
+                    }
                 }
 
+                if (!scrollTimer) {
+                    if (now - lastScrollFireTime > (3 * minMouseOverTime)) {
+                        mouseOver(event);   // fire immediately on first scroll
+                        lastScrollFireTime = now;
+                    }
+                    scrollTimer = setTimeout(function() {
+                        scrollTimer = null;
+                        lastScrollFireTime = new Date().getTime();
+                        mouseOver(event);
+                    }, minMouseOverTime);
+                }
+            });
+        });
+        
+
+
+        mouseOutEvents.forEach((type: string) => {
+            window.addEventListener(type, (event: any) => {
+                if (highlightedResidues.indexOf(event) > -1) {
+                    return;
+                }
                 unHighlightObject(event);
-                highLightObject(event);
-            }
-            else {
-                unHighlightObject(event);
-            }
-        });
-
-        window.addEventListener('PDB.litemol.click', (event: any) => {
-            onClick(event);
-        });
-
-        window.addEventListener('PDB.litemol.mouseout', (event: any) => {
-            if (highlightedResidues.indexOf(event) > -1) {
-                return;
-            }
-            unHighlightObject(false);
-        });
-
-        window.addEventListener('PDB.topologyViewer.click', (event: any) => {
-            onClick(event);
-        });
-
-        window.addEventListener('PDB.topologyViewer.mouseover', (event: any) => {
-            if (typeof event.eventData.residuesName != 'undefined') {
-                unHighlightObject(event);
-                highLightObject(event);
-            }
-        });
-
-        window.addEventListener('PDB.topologyViewer.mouseout', () => {
-            if (highlightedResidues.indexOf(event) > -1) {
-                return;
-            }
-            unHighlightObject(false);
+            });
         });
 
         this.sidechainOutliers = 0;
@@ -1184,7 +1195,7 @@ class RamachandranComponent extends PolymerElement {
                 d3.select(this)
                     .style('background-color', '#b4bed6')
                     .style('cursor', 'pointer');
-                d3.select('#' + d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num)
+                d3.select('#' + '-' + d.chain + '-' + d.modelId + '-' + d.num)
                     .attr('d', (dat: any) => {
                         if (dat.aa === 'GLY') {
                             symbolTypes.triangle.size(175);

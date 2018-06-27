@@ -256,6 +256,10 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 outliersType = this.outliersType,
                 rsrz = this.rsrz,
                 opacityFunction = this.opacityFunction;
+
+            var clickEvents = ['PDB.litemol.click', 'PDB.topologyViewer.click'];
+            var mouseOverEvents = ['PDB.litemol.mouseover', 'PDB.topologyViewer.mouseover'];
+            var mouseOutEvents = ['PDB.topologyViewer.mouseout', 'PDB.litemol.mouseout'];
             var highlightedResidues = this.highlightedResidues;
 
             if (width > 768) {
@@ -442,7 +446,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     }
                 }
             })).enter().append('g').attr('class', 'dataGroup').append('path').attr('id', function (d) {
-                var id = d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num;
+                var id = d.chain + '-' + d.modelId + '-' + d.num;
                 d.idSlector = id;
                 if (drawingType !== 3) {
                     if (d.rama === 'OUTLIER') {
@@ -618,18 +622,20 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 return symbolTypes.circle();
             }
             function unHighlightObject(event) {
-                if (highlightedResidues.indexOf(getRes(event)) == -1) {
-                    d3.select('.selected-res').classed('selected-res', false).attr('d', function (d) {
-                        return changeObjectSize(d);
-                    }).transition().duration(50).style('fill', function (d) {
-                        return fillColorFunction(d, drawingType, outliersType, rsrz, true);
-                    }).style('opacity', function (d) {
-                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
-                    });
+                if (typeof event.eventData != 'undefined') {
+                    if (highlightedResidues.indexOf(getResidueNode(event)) == -1) {
+                        d3.select('.selected-res').classed('selected-res', false).attr('d', function (d) {
+                            return changeObjectSize(d);
+                        }).transition().duration(50).style('fill', function (d) {
+                            return fillColorFunction(d, drawingType, outliersType, rsrz, true);
+                        }).style('opacity', function (d) {
+                            return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                        });
+                    }
                 }
             }
             function onClick(event) {
-                var res = getRes(event);
+                var res = getResidueNode(event);
                 if (highlightedResidues.length != 0) {
                     highlightedResidues.forEach(function (d) {
                         d.attr('d', function (d) {
@@ -643,54 +649,61 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     highlightedResidues.pop();
                 }
                 highlightedResidues.push(res);
-                getRes(event).attr('d', function (d) {
+                getResidueNode(event).attr('d', function (d) {
                     return changeObjectSize(d, false);
                 }).classed('selected-res', false).style('fill', 'magenta').style('opacity', '1');
             }
-            function getRes(event) {
-                return d3.select('path#' + event.eventData.residuesName + '-' + event.eventData.chainId + '-' + event.eventData.entityId + '-' + event.eventData.residueNumber);
+            function getResidueNode(event) {
+                return d3.select('path#' + event.eventData.chainId + '-' + event.eventData.entityId + '-' + event.eventData.residueNumber);
             }
             function highLightObject(event) {
-                // highlightedResidues.push(res);
-                getRes(event).attr('d', function (d) {
+                getResidueNode(event).attr('d', function (d) {
                     return changeObjectSize(d, false);
                 }).classed('selected-res', true).style('fill', 'yellow').style('opacity', '1');
                 // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
             }
-            window.addEventListener('PDB.litemol.mouseover', function (event) {
-                if (typeof event.eventData.residuesName != 'undefined') {
-                    if (getRes(event).attr('style').includes('magenta')) {
+            clickEvents.forEach(function (type) {
+                window.addEventListener(type, function (event) {
+                    onClick(event);
+                });
+            });
+            var scrollTimer = void 0,
+                lastScrollFireTime = 0;
+            mouseOverEvents.forEach(function (type) {
+                window.addEventListener(type, function (event) {
+                    var minMouseOverTime = 300;
+                    var now = new Date().getTime();
+                    function mouseOver(event) {
+                        if (typeof event.eventData != 'undefined') {
+                            if (getResidueNode(event).attr('style').includes('magenta')) {
+                                return;
+                            }
+                            unHighlightObject(event);
+                            highLightObject(event);
+                        } else {
+                            unHighlightObject(event);
+                        }
+                    }
+                    if (!scrollTimer) {
+                        if (now - lastScrollFireTime > 3 * minMouseOverTime) {
+                            mouseOver(event); // fire immediately on first scroll
+                            lastScrollFireTime = now;
+                        }
+                        scrollTimer = setTimeout(function () {
+                            scrollTimer = null;
+                            lastScrollFireTime = new Date().getTime();
+                            mouseOver(event);
+                        }, minMouseOverTime);
+                    }
+                });
+            });
+            mouseOutEvents.forEach(function (type) {
+                window.addEventListener(type, function (event) {
+                    if (highlightedResidues.indexOf(event) > -1) {
                         return;
                     }
                     unHighlightObject(event);
-                    highLightObject(event);
-                } else {
-                    unHighlightObject(event);
-                }
-            });
-            window.addEventListener('PDB.litemol.click', function (event) {
-                onClick(event);
-            });
-            window.addEventListener('PDB.litemol.mouseout', function (event) {
-                if (highlightedResidues.indexOf(event) > -1) {
-                    return;
-                }
-                unHighlightObject(false);
-            });
-            window.addEventListener('PDB.topologyViewer.click', function (event) {
-                onClick(event);
-            });
-            window.addEventListener('PDB.topologyViewer.mouseover', function (event) {
-                if (typeof event.eventData.residuesName != 'undefined') {
-                    unHighlightObject(event);
-                    highLightObject(event);
-                }
-            });
-            window.addEventListener('PDB.topologyViewer.mouseout', function () {
-                if (highlightedResidues.indexOf(event) > -1) {
-                    return;
-                }
-                unHighlightObject(false);
+                });
             });
             this.sidechainOutliers = 0;
             this.rsrzCount = 0;
@@ -963,7 +976,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             });
             rows.enter().append('tr').on('mouseover', function (d) {
                 d3.select(this).style('background-color', '#b4bed6').style('cursor', 'pointer');
-                d3.select('#' + d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num).attr('d', function (dat) {
+                d3.select('#' + '-' + d.chain + '-' + d.modelId + '-' + d.num).attr('d', function (dat) {
                     if (dat.aa === 'GLY') {
                         symbolTypes.triangle.size(175);
                         return symbolTypes.triangle();
