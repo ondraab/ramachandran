@@ -35,10 +35,40 @@ class RamachandranComponent extends PolymerElement {
     private ramaContourPlotType;
     private contourColoringStyle;
 
-    constructor() {
-        super();
-        // this.pdbId = '1tqn';
-        // console.log(this.pdbId);
+    // constructor() {
+    //     super();
+    //     // this.pdbId = '1tqn';
+    //     // console.log(this.pdbId);
+    //     this.createChart = this.createChart.bind(this);
+    //     // const pdb = new ParsePDB(this.pdbId);
+    //     // pdb.downloadAndParse();
+    //     //
+    //     // this.jsonObject = pdb.residueArray;
+    //     // this.outliersType = pdb.outlDict;
+    //     // this.rsrz = pdb.rsrz;
+    //     //
+    //     // this.ramachandranOutliers = 0;
+    //     // this.sidechainOutliers = 0;
+    //     // this.rsrzCount = 0;
+    //     // this.clashes = 0;
+    //     // this.firstRun = true;
+    //     // this.highlightedResidues = [];
+    //     // this.createChart();
+    //     // this.state = {
+    //     //     chainsToShow: ['A'],
+    //     //     contourColoringStyle: 1,
+    //     //     element: this.props.element,
+    //     //     initial: true,
+    //     //     modelsToShow: [1],
+    //     //     pdb: this.props.pdbID,
+    //     //     ramaContourPlotType: this.props.ramaContourPlotType,
+    //     //     residueColorStyle: 1,
+    //     // };
+    //     this.fillColorFunction = this.fillColorFunction.bind(this);
+    // }
+
+    connectedCallback() {
+
         this.createChart = this.createChart.bind(this);
         // const pdb = new ParsePDB(this.pdbId);
         // pdb.downloadAndParse();
@@ -65,9 +95,6 @@ class RamachandranComponent extends PolymerElement {
         //     residueColorStyle: 1,
         // };
         this.fillColorFunction = this.fillColorFunction.bind(this);
-    }
-
-    connectedCallback() {
 
         const pdb = new ParsePDB(this.pdbId);
         pdb.downloadAndParse();
@@ -1248,4 +1275,5 @@ class RamachandranComponent extends PolymerElement {
         cells.exit().remove();
     }
 }
-customElements.define('ramachandran-component', RamachandranComponent);
+
+window.customElements.define('ramachandran-component', RamachandranComponent);

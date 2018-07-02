@@ -23,44 +23,72 @@ var RamachandranComponent = function (_polymer_element_js_) {
     function RamachandranComponent() {
         _classCallCheck(this, RamachandranComponent);
 
-        // this.pdbId = '1tqn';
-        // console.log(this.pdbId);
-        var _this = _possibleConstructorReturn(this, (RamachandranComponent.__proto__ || Object.getPrototypeOf(RamachandranComponent)).call(this));
-
-        _this.createChart = _this.createChart.bind(_this);
-        // const pdb = new ParsePDB(this.pdbId);
-        // pdb.downloadAndParse();
-        //
-        // this.jsonObject = pdb.residueArray;
-        // this.outliersType = pdb.outlDict;
-        // this.rsrz = pdb.rsrz;
-        //
-        // this.ramachandranOutliers = 0;
-        // this.sidechainOutliers = 0;
-        // this.rsrzCount = 0;
-        // this.clashes = 0;
-        // this.firstRun = true;
-        // this.highlightedResidues = [];
-        // this.createChart();
-        // this.state = {
-        //     chainsToShow: ['A'],
-        //     contourColoringStyle: 1,
-        //     element: this.props.element,
-        //     initial: true,
-        //     modelsToShow: [1],
-        //     pdb: this.props.pdbID,
-        //     ramaContourPlotType: this.props.ramaContourPlotType,
-        //     residueColorStyle: 1,
-        // };
-        _this.fillColorFunction = _this.fillColorFunction.bind(_this);
-        return _this;
+        return _possibleConstructorReturn(this, (RamachandranComponent.__proto__ || Object.getPrototypeOf(RamachandranComponent)).apply(this, arguments));
     }
 
     _createClass(RamachandranComponent, [{
         key: "connectedCallback",
+
+        // constructor() {
+        //     super();
+        //     // this.pdbId = '1tqn';
+        //     // console.log(this.pdbId);
+        //     this.createChart = this.createChart.bind(this);
+        //     // const pdb = new ParsePDB(this.pdbId);
+        //     // pdb.downloadAndParse();
+        //     //
+        //     // this.jsonObject = pdb.residueArray;
+        //     // this.outliersType = pdb.outlDict;
+        //     // this.rsrz = pdb.rsrz;
+        //     //
+        //     // this.ramachandranOutliers = 0;
+        //     // this.sidechainOutliers = 0;
+        //     // this.rsrzCount = 0;
+        //     // this.clashes = 0;
+        //     // this.firstRun = true;
+        //     // this.highlightedResidues = [];
+        //     // this.createChart();
+        //     // this.state = {
+        //     //     chainsToShow: ['A'],
+        //     //     contourColoringStyle: 1,
+        //     //     element: this.props.element,
+        //     //     initial: true,
+        //     //     modelsToShow: [1],
+        //     //     pdb: this.props.pdbID,
+        //     //     ramaContourPlotType: this.props.ramaContourPlotType,
+        //     //     residueColorStyle: 1,
+        //     // };
+        //     this.fillColorFunction = this.fillColorFunction.bind(this);
+        // }
         value: function connectedCallback() {
             var _this2 = this;
 
+            this.createChart = this.createChart.bind(this);
+            // const pdb = new ParsePDB(this.pdbId);
+            // pdb.downloadAndParse();
+            //
+            // this.jsonObject = pdb.residueArray;
+            // this.outliersType = pdb.outlDict;
+            // this.rsrz = pdb.rsrz;
+            //
+            // this.ramachandranOutliers = 0;
+            // this.sidechainOutliers = 0;
+            // this.rsrzCount = 0;
+            // this.clashes = 0;
+            // this.firstRun = true;
+            // this.highlightedResidues = [];
+            // this.createChart();
+            // this.state = {
+            //     chainsToShow: ['A'],
+            //     contourColoringStyle: 1,
+            //     element: this.props.element,
+            //     initial: true,
+            //     modelsToShow: [1],
+            //     pdb: this.props.pdbID,
+            //     ramaContourPlotType: this.props.ramaContourPlotType,
+            //     residueColorStyle: 1,
+            // };
+            this.fillColorFunction = this.fillColorFunction.bind(this);
             var pdb = new parsePdb_1.default(this.pdbId);
             pdb.downloadAndParse();
             this.jsonObject = pdb.residueArray;
@@ -1064,5 +1092,5 @@ var RamachandranComponent = function (_polymer_element_js_) {
     return RamachandranComponent;
 }(polymer_element_js_1.PolymerElement);
 
-customElements.define('ramachandran-component', RamachandranComponent);
+window.customElements.define('ramachandran-component', RamachandranComponent);
 //# sourceMappingURL=RamachandranComponent.js.map
