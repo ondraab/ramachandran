@@ -8,10 +8,38 @@ require("bootstrap/dist/css/bootstrap.css");
 require("../public/index.css");
 const parsePdb_1 = require("./parsePdb");
 class RamachandranComponent extends polymer_element_js_1.PolymerElement {
-    constructor() {
-        super();
-        // this.pdbId = '1tqn';
-        // console.log(this.pdbId);
+    // constructor() {
+    //     super();
+    //     // this.pdbId = '1tqn';
+    //     // console.log(this.pdbId);
+    //     this.createChart = this.createChart.bind(this);
+    //     // const pdb = new ParsePDB(this.pdbId);
+    //     // pdb.downloadAndParse();
+    //     //
+    //     // this.jsonObject = pdb.residueArray;
+    //     // this.outliersType = pdb.outlDict;
+    //     // this.rsrz = pdb.rsrz;
+    //     //
+    //     // this.ramachandranOutliers = 0;
+    //     // this.sidechainOutliers = 0;
+    //     // this.rsrzCount = 0;
+    //     // this.clashes = 0;
+    //     // this.firstRun = true;
+    //     // this.highlightedResidues = [];
+    //     // this.createChart();
+    //     // this.state = {
+    //     //     chainsToShow: ['A'],
+    //     //     contourColoringStyle: 1,
+    //     //     element: this.props.element,
+    //     //     initial: true,
+    //     //     modelsToShow: [1],
+    //     //     pdb: this.props.pdbID,
+    //     //     ramaContourPlotType: this.props.ramaContourPlotType,
+    //     //     residueColorStyle: 1,
+    //     // };
+    //     this.fillColorFunction = this.fillColorFunction.bind(this);
+    // }
+    connectedCallback() {
         this.createChart = this.createChart.bind(this);
         // const pdb = new ParsePDB(this.pdbId);
         // pdb.downloadAndParse();
@@ -38,8 +66,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         //     residueColorStyle: 1,
         // };
         this.fillColorFunction = this.fillColorFunction.bind(this);
-    }
-    connectedCallback() {
         const pdb = new parsePdb_1.default(this.pdbId);
         pdb.downloadAndParse();
         this.jsonObject = pdb.residueArray;
@@ -95,53 +121,65 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
     static get template() {
         return null;
     }
-    // public componentWillUpdate(nextProps: any, nextState: any) {
-    //
-    //     if (nextProps.pdbID !== this.state.pdb || nextProps.chainsToShow !== this.state.chainsToShow ||
-    //         nextProps.modelsToShow !== this.state.modelsToShow) {
-    //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-    //             nextProps.residueColorStyle);
-    //         // console.log(nextProps.contourColoringStyle, this.state.contourColoringStyle);
-    //     }
-    //     if (nextProps.ramaContourPlotType !== this.state.ramaContourPlotType) {
-    //         // this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-    //         //                  nextProps.residueColorStyle);
-    //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-    //             nextProps.residueColorStyle);
-    //         this.basicContours(nextProps.ramaContourPlotType, nextProps.contourColoringStyle);
-    //     } else if (nextProps.residueColorStyle !== this.state.residueColorStyle) {
-    //         this.updateChart(nextProps.chainsToShow, nextProps.ramaContourPlotType, nextProps.modelsToShow,
-    //             nextProps.residueColorStyle);
-    //     } else if (nextProps.contourColoringStyle !== this.state.contourColoringStyle) {
-    //         // console.log(nextProps.contourColoringStyle, this.state.contourColoringStyle);
-    //         this.basicContours(nextProps.ramaContourPlotType, nextProps.contourColoringStyle);
-    //     }
-    //
-    // }
-    // public shouldComponentUpdate(nextProps: any, nextState: any) {
-    //     if (nextState.pdb.length === 4 && nextProps.pdbID !== this.state.pdb)  {
-    //         return true;
-    //     }
-    //     if (nextProps.ramaContourPlotType !== this.state.ramaContourPlotType) {
-    //         return true;
-    //     }
-    //     if (nextProps.contourColoringStyle !== this.state.contourColoringStyle) {
-    //         return true;
-    //     }
-    //     if (nextProps.modelsToShow.length !== this.state.modelsToShow.length) {
-    //         return true;
-    //     }
-    //     if (nextProps.residueColorStyle !== this.state.residueColorStyle) {
-    //         return true;
-    //     }
-    //     return nextProps.chainsToShow.length !== this.state.chainsToShow.length;
-    // }
+    fillColorFunction(d, drawingType, outliersType, rsrz, compute = false) {
+        switch (drawingType) {
+            case 1:
+                if (d.rama === 'OUTLIER') {
+                    return '#f00';
+                }
+                return 'black';
+            case 2:
+                if (typeof outliersType[d.num] === 'undefined') {
+                    return '#008000';
+                }
+                else {
+                    if (compute === true) {
+                        if (outliersType[d.num].outliersType.includes('clashes')) {
+                            this.clashes++;
+                        }
+                        if (outliersType[d.num].outliersType.includes('ramachandran_outliers')) {
+                            this.ramachandranOutliers++;
+                        }
+                        if (outliersType[d.num].outliersType.includes('sidechain_outliers')) {
+                            this.sidechainOutliers++;
+                        }
+                    }
+                    switch (outliersType[d.num].outliersType.length) {
+                        case 0:
+                            return '#008000';
+                        case 1:
+                            return '#ff0';
+                        case 2:
+                            return '#f80';
+                        default:
+                            return '#850013';
+                    }
+                }
+            case 3:
+                if (typeof rsrz[d.num] === 'undefined') {
+                    return 'black';
+                }
+                else {
+                    if (compute === true) {
+                        this.rsrzCount++;
+                    }
+                    return '#f00';
+                }
+            default:
+                break;
+        }
+    }
+    opacityFunction(fillTmp) {
+        if (fillTmp === '#008000' || fillTmp === 'black') {
+            return 0.15;
+        }
+        if (fillTmp === '#ff0') {
+            return 0.8;
+        }
+        return 1;
+    }
     createChart() {
         let width = 500, height = 500;
-        // let element = document.getElementById('rama-root');
-        // const node = document.createElement('div');
-        // node.setAttribute('id', 'ramachandran-root-element');
-        // element.appendChild(node);
         if (width > 768) {
             width = 580;
         }
@@ -293,59 +331,15 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers, this.residueColorStyle);
         this.basicContours(this.ramaContourPlotType, this.contourColoringStyle);
     }
-    fillColorFunction(d, drawingType, outliersType, rsrz, compute = false) {
-        switch (drawingType) {
-            case 1:
-                if (d.rama === 'OUTLIER') {
-                    return '#f00';
-                }
-                return 'black';
-            case 2:
-                if (typeof outliersType[d.num] === 'undefined') {
-                    return '#008000';
-                }
-                else {
-                    if (compute === true) {
-                        if (outliersType[d.num].outliersType.includes('clashes')) {
-                            this.clashes++;
-                        }
-                        if (outliersType[d.num].outliersType.includes('ramachandran_outliers')) {
-                            this.ramachandranOutliers++;
-                        }
-                        if (outliersType[d.num].outliersType.includes('sidechain_outliers')) {
-                            this.sidechainOutliers++;
-                        }
-                    }
-                    switch (outliersType[d.num].outliersType.length) {
-                        case 0:
-                            return '#008000';
-                        case 1:
-                            return '#ff0';
-                        case 2:
-                            return '#f80';
-                        default:
-                            return '#850013';
-                    }
-                }
-            case 3:
-                if (typeof rsrz[d.num] === 'undefined') {
-                    return 'black';
-                }
-                else {
-                    if (compute === true) {
-                        this.rsrzCount++;
-                    }
-                    return '#f00';
-                }
-            default:
-                break;
-        }
-    }
     updateChart(chainsToShow, ramaContourPlotType, entityToShow, drawingType) {
         this.svgContainer.selectAll('g.dataGroup').remove();
         let width = 500;
         const tooltip = this.tooltip;
-        const { jsonObject, fillColorFunction, outliersType, rsrz, highlightedResidues } = this;
+        const { jsonObject, fillColorFunction, outliersType, rsrz, opacityFunction } = this;
+        const clickEvents = ['PDB.litemol.click', 'PDB.topologyViewer.click'];
+        const mouseOverEvents = ['PDB.litemol.mouseover', 'PDB.topologyViewer.mouseover'];
+        const mouseOutEvents = ['PDB.topologyViewer.mouseout', 'PDB.litemol.mouseout'];
+        let { highlightedResidues } = this;
         if (width > 768) {
             width = 580;
         }
@@ -557,7 +551,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .attr('class', 'dataGroup')
             .append('path')
             .attr('id', (d) => {
-            const id = d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num;
+            const id = d.chain + '-' + d.modelId + '-' + d.num;
             d.idSlector = id;
             if (drawingType !== 3) {
                 if (d.rama === 'OUTLIER') {
@@ -588,14 +582,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             // .style('fill', 'transparent')
             .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz, true))
             .style('opacity', (d) => {
-            const fillTmp = fillColorFunction(d, drawingType, outliersType, rsrz);
-            if (fillTmp === '#008000' || fillTmp === 'black') {
-                return 0.15;
-            }
-            if (fillTmp === '#ff0') {
-                return 0.8;
-            }
-            return 1;
+            return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
         })
             .on('mouseover', function (d) {
             let height = 58;
@@ -667,7 +654,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('width', String(width) + 'px');
             d3.select(this)
                 .attr('d', (d) => changeObjectSize(d, false))
-                .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
+                .style('fill', 'yellow')
+                .style('opacity', 1);
+            // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
         })
             .on('mouseout', function (d) {
             dispatchCustomEvent('PDB.ramaViewer.mouseOut', d);
@@ -679,28 +668,36 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 // .duration(50)
                 .attr('d', (dat) => changeObjectSize(dat))
                 // .style('fill', 'transparent')
-                .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz));
+                .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz))
+                .style('opacity', (d) => {
+                return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+            });
             // .style('fillColorFunction-width', '0.5');
             tooltip.transition()
                 // .duration(50)
                 .style('opacity', 0);
         })
             .on('click', function (d) {
-            if (highlightedResidues.indexOf(d) > -1) {
-                unHighlightObject(true);
-                return;
+            if (highlightedResidues.length != 0) {
+                highlightedResidues.forEach((d) => {
+                    d3.select('#' + d.idSlector)
+                        .attr('d', (d) => changeObjectSize(d)).transition().duration(50)
+                        .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz))
+                        .style('opacity', (d) => {
+                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                    });
+                });
+                highlightedResidues.pop();
             }
-            unHighlightObject(true);
             dispatchCustomEvent('PDB.ramaViewer.click', d);
             highlightedResidues.push(d);
             d3.select(this)
                 .attr('d', (d) => changeObjectSize(d, false))
-                .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
+                .style('fill', 'magenta')
+                .style('opacity', 1);
+            // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
         });
         outliersList.sort((a, b) => a.num - b.num);
-        // this.setState({
-        //     initial: false
-        // });
         this.firstRun = false;
         switch (drawingType) {
             case 1:
@@ -746,59 +743,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             default:
                 return;
         }
-        // const butt = d3.select('div#ramachandran-root-element').append('button').text('OK');
-        // butt.on('mouseover', () => {
-        //     unHighlightObject(false);
-        //     d3.select('path#ASN-A-1-14').attr('d', (dat: any) => {
-        //         if (dat.aa === 'GLY') {
-        //             symbolTypes.triangle.size(175);
-        //             return symbolTypes.triangle();
-        //         }
-        //         symbolTypes.circle.size(175);
-        //         return symbolTypes.circle();
-        //     });
-        // }).on('mouseout', (d: any) => {
-        //     unHighlightObject(false);
-        // });
-        //
-        // const butt2 = d3.select('div#ramachandran-root-element').append('button').text('OK');
-        // butt2.on('mouseover', () => {
-        //     unHighlightObject(false);
-        //     d3.select('path#VAL-A-1-26').attr('d', (dat: any) => {
-        //         if (dat.aa === 'GLY') {
-        //             symbolTypes.triangle.size(175);
-        //             return symbolTypes.triangle();
-        //         }
-        //         symbolTypes.circle.size(175);
-        //         return symbolTypes.circle();
-        //     });
-        // }).on('mouseout', (d: any) => {
-        //     unHighlightObject(false);
-        // });
-        //
-        // const butt3 = d3.select('div#ramachandran-root-element').append('button').text('OK');
-        // butt3.on('click', () => {
-        //     const res = d3.select('path#TRP-A-1-87');
-        //     if (highlightedResidues.indexOf(res) > -1) {
-        //         unHighlightObject(true);
-        //         return;
-        //     }
-        //     unHighlightObject(true);
-        //     highlightedResidues.push(res);
-        //     highLightObject(event);
-        // }).on('mouseover', () => {
-        //     unHighlightObject(false);
-        //     d3.select('path#TRP-A-1-87').attr('d', (dat: any) => {
-        //         if (dat.aa === 'GLY') {
-        //             symbolTypes.triangle.size(175);
-        //             return symbolTypes.triangle();
-        //         }
-        //         symbolTypes.circle.size(175);
-        //         return symbolTypes.circle();
-        //     });
-        // }).on('mouseout', (d: any) => {
-        //     unHighlightObject(false);
-        // });
         function changeObjectSize(d, smaller = true) {
             let size = 175;
             if (smaller) {
@@ -811,113 +755,92 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             symbolTypes.circle.size(size);
             return symbolTypes.circle();
         }
-        function unHighlightObject(all = true) {
-            if (all) {
+        function unHighlightObject(event) {
+            if (typeof event.eventData != 'undefined') {
+                if (highlightedResidues.indexOf(getResidueNode(event)) == -1) {
+                    d3.select('.selected-res')
+                        .classed('selected-res', false)
+                        .attr('d', (d) => changeObjectSize(d)).transition().duration(50)
+                        .style('fill', (d) => fillColorFunction(d, drawingType, outliersType, rsrz, true))
+                        .style('opacity', (d) => {
+                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                    });
+                }
+            }
+        }
+        function onClick(event) {
+            const res = getResidueNode(event);
+            if (highlightedResidues.length != 0) {
                 highlightedResidues.forEach((d) => {
-                    d3.select('#' + d._idSlector)
-                        .attr('d', (d) => changeObjectSize(d)).transition().duration(50);
+                    d.attr('d', (d) => changeObjectSize(d)).transition().duration(50)
+                        .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz))
+                        .style('opacity', (d) => {
+                        return opacityFunction(fillColorFunction(d, drawingType, outliersType, rsrz));
+                    });
                 });
                 highlightedResidues.pop();
-                return;
             }
-            d3.selectAll('path').filter((d) => {
-                if (d) {
-                    if (highlightedResidues.indexOf(d) === -1) {
-                        return d;
-                    }
-                }
-            }).each((d) => d).attr('d', (d) => changeObjectSize(d)).transition().duration(50);
-            // if (!all) {
-            //     d3.selectAll('path').filter((d: any) => {
-            //         if (d) {
-            //             if (d.spProp === true) {
-            //                 d.spProp = false;
-            //                 return d;
-            //             }
-            //         }
-            //     }).each((d) => d).attr('d', (d: any) => changeObjectSize(d)).transition().duration(50);
-            // }
-            // highlightedResidues.forEach((d: any) => {
-            //     if (all && d.spProp) {
-            //         d.spProp = false;
-            //         return;
-            //     }
-            //     d3.select('#' + d._idSlector).attr('d', (d: any) => changeObjectSize(d)).transition().duration(50);
-            // });
-            // d3.selectAll('path').filter((d: any) => {
-            //     if (d) {
-            //         if (all) {
-            //             if (d.spProp) {
-            //                 d.spProp = false;
-            //             }
-            //             return d;
-            //         }
-            //         if (d.spProp === false) {
-            //             return d;
-            //         }
-            //     }
-            // }).each((d) => d).attr('d', (dat: any) => {
-            //     if (dat) {
-            //         // console.log(dat.aa);
-            //         if (dat.aa === 'GLY') {
-            //             symbolTypes.triangle.size(objSize);
-            //             return symbolTypes.triangle();
-            //         }
-            //         symbolTypes.circle.size(objSize);
-            //         return symbolTypes.circle();
-            //     }
-            // }).transition().duration(50);
+            highlightedResidues.push(res);
+            getResidueNode(event).attr('d', (d) => changeObjectSize(d, false))
+                .classed('selected-res', false)
+                .style('fill', 'magenta')
+                .style('opacity', '1');
         }
-        function getRes(event) {
-            return d3.select('path#' + event.eventData.residuesName + '-' +
+        function getResidueNode(event) {
+            return d3.select('path#' +
                 event.eventData.chainId + '-' +
                 event.eventData.entityId + '-' +
                 event.eventData.residueNumber);
         }
         function highLightObject(event) {
-            // highlightedResidues.push(res);
-            getRes(event).attr('d', (d) => changeObjectSize(d, false))
-                .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
+            getResidueNode(event).attr('d', (d) => changeObjectSize(d, false))
+                .classed('selected-res', true)
+                .style('fill', 'yellow')
+                .style('opacity', '1');
+            // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
         }
-        window.addEventListener('PDB.litemol.mouseover', (event) => {
-            unHighlightObject(false);
-            highLightObject(event);
+        clickEvents.forEach((type) => {
+            window.addEventListener(type, (event) => {
+                onClick(event);
+            });
         });
-        window.addEventListener('PDB.litemol.click', (event) => {
-            const res = getRes(event);
-            if (highlightedResidues.indexOf(res) > -1) {
-                unHighlightObject(true);
-                return;
-            }
-            unHighlightObject(true);
-            highlightedResidues.push(res);
-            highLightObject(event);
+        let scrollTimer, lastScrollFireTime = 0;
+        mouseOverEvents.forEach((type) => {
+            window.addEventListener(type, (event) => {
+                const minMouseOverTime = 300;
+                let now = new Date().getTime();
+                function mouseOver(event) {
+                    if (typeof event.eventData != 'undefined') {
+                        if (getResidueNode(event).attr('style').includes('magenta')) {
+                            return;
+                        }
+                        unHighlightObject(event);
+                        highLightObject(event);
+                    }
+                    else {
+                        unHighlightObject(event);
+                    }
+                }
+                if (!scrollTimer) {
+                    if (now - lastScrollFireTime > (3 * minMouseOverTime)) {
+                        mouseOver(event); // fire immediately on first scroll
+                        lastScrollFireTime = now;
+                    }
+                    scrollTimer = setTimeout(function () {
+                        scrollTimer = null;
+                        lastScrollFireTime = new Date().getTime();
+                        mouseOver(event);
+                    }, minMouseOverTime);
+                }
+            });
         });
-        window.addEventListener('PDB.litemol.mouseout', (event) => {
-            if (highlightedResidues.indexOf(event) > -1) {
-                return;
-            }
-            unHighlightObject(false);
-        });
-        window.addEventListener('PDB.topologyViewer.click', (event) => {
-            const res = getRes(event);
-            if (highlightedResidues.indexOf(res) > -1) {
-                unHighlightObject(true);
-                return;
-            }
-            unHighlightObject(true);
-            highlightedResidues.push(res);
-            highLightObject(event);
-        });
-        window.addEventListener('PDB.topologyViewer.mouseover', (event) => {
-            unHighlightObject(false);
-            highLightObject(event);
-        });
-        window.addEventListener('PDB.topologyViewer.mouseout', () => {
-            if (highlightedResidues.indexOf(event) > -1) {
-                return;
-            }
-            unHighlightObject(false);
+        mouseOutEvents.forEach((type) => {
+            window.addEventListener(type, (event) => {
+                if (highlightedResidues.indexOf(event) > -1) {
+                    return;
+                }
+                unHighlightObject(event);
+            });
         });
         this.sidechainOutliers = 0;
         this.rsrzCount = 0;
@@ -1186,7 +1109,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             d3.select(this)
                 .style('background-color', '#b4bed6')
                 .style('cursor', 'pointer');
-            d3.select('#' + d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num)
+            d3.select('#' + '-' + d.chain + '-' + d.modelId + '-' + d.num)
                 .attr('d', (dat) => {
                 if (dat.aa === 'GLY') {
                     symbolTypes.triangle.size(175);
@@ -1237,4 +1160,4 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         cells.exit().remove();
     }
 }
-customElements.define('ramachandran-component', RamachandranComponent);
+window.customElements.define('ramachandran-component', RamachandranComponent);

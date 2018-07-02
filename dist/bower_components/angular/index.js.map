@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../bower_components/angular/index.js"],"names":["require","module","exports","angular"],"mappings":";;AAAAA,QAAQ,WAAR;AACAC,OAAOC,OAAP,GAAiBC,OAAjB","file":"index.js","sourcesContent":["require('./angular');\nmodule.exports = angular;\n"]}

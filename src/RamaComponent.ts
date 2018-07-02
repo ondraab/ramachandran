@@ -127,46 +127,6 @@ class RamaComponent extends PolymerElement {
     ready() {
         super.ready();
     }
-
-    // private renderRamaComp(element: HTMLElement,
-    //                        residueColorStyle: number,
-    //                        contourColorStyle: number,
-    //                        ramaContourPlotType: number) {
-    //     let component = document.createElement('rama-data');
-    // }
-    // function renderRamaComp(element: HTMLElement,
-    //                         residueColorStyle: number,
-    //                         contourColoringStyle: number,
-    //                         ramaContourPlotType: number) {
-    //         <RamachandranComponent width={473} height={473}
-    //     pdbID={pdbID}
-    //     chainsToShow={chainsToShow}
-    //     modelsToShow={modelsToShow}
-    //     residueColorStyle={residueColorStyle}
-    //     contourColoringStyle={contourColoringStyle}
-    //     ramaContourPlotType={ramaContourPlotType}
-    //     element={element}
-    //     />
-    // );
-    //
-    // }
-    // renderRamaComp(element, residueColorStyle, contourColoringStyle, ramaContourPlotType);
-    //
-    // setTimeout(() => {
-    //     d3.select('#rama-coloring').on('change', function() {
-    //         residueColorStyle = Number(d3.select(this).property('value'));
-    //         renderRamaComp(element, residueColorStyle, contourColoringStyle, ramaContourPlotType);
-    //     });
-    //     d3.select('#rama-plot-type').on('change', function() {
-    //         ramaContourPlotType = Number(d3.select(this).property('value'));
-    //         renderRamaComp(element, residueColorStyle, contourColoringStyle, ramaContourPlotType);
-    //     });
-    //     d3.selectAll('input[name=contour-style]').on('change', function() {
-    //         contourColoringStyle = Number(d3.select(this).property('value'));
-    //         renderRamaComp(element, residueColorStyle, contourColoringStyle, ramaContourPlotType);
-    //     });
-    //
-    // },50);
 }
 
 customElements.define('rama-component', RamaComponent);

@@ -25,7 +25,7 @@ class ParsePDB {
     }
     downloadAndParse() {
         const xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', 'http://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this.pdbID, false);
+        xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this.pdbID, false);
         xmlHttp.send();
         if (xmlHttp.status !== 200) {
             return;
