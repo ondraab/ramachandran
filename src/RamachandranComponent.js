@@ -226,7 +226,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .attr('viewBox', '0 0 ' + width + ' ' + height)
             .classed('svg-content-responsive', true)
             .style('overflow', 'visible');
-        this.canvasContainer = d3.select('#rama-svg-container')
+        RamachandranComponent.canvasContainer = d3.select('#rama-svg-container')
             .append('canvas')
             .classed('img-responsive', true)
             .attr('id', 'rama-canvas')
@@ -335,9 +335,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.svgContainer.selectAll('g.dataGroup').remove();
         let width = 500;
         const tooltip = this.tooltip;
-        const { jsonObject, fillColorFunction, outliersType, rsrz, opacityFunction } = this;
+        const { jsonObject, fillColorFunction, outliersType, rsrz, opacityFunction, basicContours, contourColoringStyle } = this;
         const clickEvents = ['PDB.litemol.click', 'PDB.topologyViewer.click'];
-        const mouseOverEvents = ['PDB.litemol.mouseover', 'PDB.topologyViewer.mouseover'];
         const mouseOutEvents = ['PDB.topologyViewer.mouseout', 'PDB.litemol.mouseout'];
         let { highlightedResidues } = this;
         if (width > 768) {
@@ -588,6 +587,18 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             let height = 58;
             let width = 90;
             dispatchCustomEvent('PDB.ramaViewer.mouseOver', d);
+            // switch (d.aa){
+            //     case 'GLY':
+            //         basicContours(4, contourColoringStyle);
+            //         break;
+            //     default:
+            //         break;
+            // }
+            // console.log(d);
+            // if (d.aa = 'GLY')
+            // {
+            //     basicContours(4, contourColoringStyle);
+            // }
             switch (drawingType) {
                 case 1:
                     if (d.rama === 'Favored') {
@@ -663,6 +674,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             if (highlightedResidues.indexOf(d) > -1) {
                 return;
             }
+            // switch (d.aa){
+            //     case 'GLY':
+            //         basicContours(ramaContourPlotType, contourColoringStyle);
+            //         break;
+            //     default:
+            //         break;
+            // }
             d3.select(this)
                 .transition()
                 // .duration(50)
@@ -787,17 +805,22 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('opacity', '1');
         }
         function getResidueNode(event) {
+            if (typeof event.eventData.chainId == 'undefined')
+                return null;
             return d3.select('path#' +
                 event.eventData.chainId + '-' +
                 event.eventData.entityId + '-' +
                 event.eventData.residueNumber);
         }
         function highLightObject(event) {
-            getResidueNode(event).attr('d', (d) => changeObjectSize(d, false))
-                .classed('selected-res', true)
-                .style('fill', 'yellow')
-                .style('opacity', '1');
-            // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
+            let res = getResidueNode(event);
+            if (res) {
+                res.attr('d', (d) => changeObjectSize(d, false))
+                    .classed('selected-res', true)
+                    .style('fill', 'yellow')
+                    .style('opacity', '1');
+                // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
+            }
         }
         clickEvents.forEach((type) => {
             window.addEventListener(type, (event) => {
@@ -805,35 +828,82 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             });
         });
         let scrollTimer, lastScrollFireTime = 0;
-        mouseOverEvents.forEach((type) => {
-            window.addEventListener(type, (event) => {
-                const minMouseOverTime = 300;
-                let now = new Date().getTime();
-                function mouseOver(event) {
-                    if (typeof event.eventData != 'undefined') {
-                        if (getResidueNode(event).attr('style').includes('magenta')) {
+        window.addEventListener('PDB.topologyViewer.mouseover', (event) => {
+            const minMouseOverTime = 150;
+            let now = new Date().getTime();
+            function mouseOver(event) {
+                if (typeof event.eventData != 'undefined') {
+                    let res = getResidueNode(event);
+                    if (res) {
+                        if (res.attr('style').includes('magenta')) {
                             return;
                         }
-                        unHighlightObject(event);
-                        highLightObject(event);
                     }
-                    else {
-                        unHighlightObject(event);
-                    }
+                    unHighlightObject(event);
+                    highLightObject(event);
                 }
-                if (!scrollTimer) {
-                    if (now - lastScrollFireTime > (3 * minMouseOverTime)) {
-                        mouseOver(event); // fire immediately on first scroll
-                        lastScrollFireTime = now;
-                    }
-                    scrollTimer = setTimeout(function () {
-                        scrollTimer = null;
-                        lastScrollFireTime = new Date().getTime();
-                        mouseOver(event);
-                    }, minMouseOverTime);
+                else {
+                    unHighlightObject(event);
                 }
-            });
+            }
+            if (!scrollTimer) {
+                if (now - lastScrollFireTime > (3 * minMouseOverTime)) {
+                    mouseOver(event); // fire immediately on first scroll
+                    lastScrollFireTime = now;
+                }
+                scrollTimer = setTimeout(function () {
+                    scrollTimer = null;
+                    lastScrollFireTime = new Date().getTime();
+                    mouseOver(event);
+                }, minMouseOverTime);
+            }
         });
+        window.addEventListener('PDB.litemol.mouseover', (event) => {
+            if (typeof event.eventData != 'undefined') {
+                let res = getResidueNode(event);
+                if (res) {
+                    if (res.attr('style').includes('magenta')) {
+                        return;
+                    }
+                }
+                unHighlightObject(event);
+                highLightObject(event);
+            }
+            else {
+                unHighlightObject(event);
+            }
+        });
+        // mouseOverEvents.forEach((type: string) => {
+        //     window.addEventListener(type, (event: any) => {
+        //         const minMouseOverTime = 300;
+        //         let now = new Date().getTime();
+        //
+        //         function mouseOver(event: any) {
+        //             if (typeof event.eventData != 'undefined') {
+        //                 if (getResidueNode(event).attr('style').includes('magenta')) {
+        //                     return;
+        //                 }
+        //                 unHighlightObject(event);
+        //                 highLightObject(event);
+        //             }
+        //             else {
+        //                 unHighlightObject(event);
+        //             }
+        //         }
+        //
+        //         if (!scrollTimer) {
+        //             if (now - lastScrollFireTime > (3 * minMouseOverTime)) {
+        //                 mouseOver(event);   // fire immediately on first scroll
+        //                 lastScrollFireTime = now;
+        //             }
+        //             scrollTimer = setTimeout(function() {
+        //                 scrollTimer = null;
+        //                 lastScrollFireTime = new Date().getTime();
+        //                 mouseOver(event);
+        //             }, minMouseOverTime);
+        //         }
+        //     });
+        // });
         mouseOutEvents.forEach((type) => {
             window.addEventListener(type, (event) => {
                 if (highlightedResidues.indexOf(event) > -1) {
@@ -851,68 +921,45 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
     basicContours(ramaContourPlotType, contourColorStyle) {
         d3.select('#rama-canvas').empty();
         d3.selectAll('.contour-line').remove();
-        const canvas = this.canvasContainer;
-        // let svg = this.svgContainer;
+        // const canvas = this.canvasContainer;
         let width = 500, height = 500;
-        // console.log(ramaContourPlotType);
         if (width > 768) {
             width = 580;
         }
         if (height > 768) {
             height = 580;
         }
-        //
-        // let node: any = (d3.select('svg.svg-container').node());
-        // let width = (node.getBoundingClientRect().width) - this.leftPadding - this.padding;
-        // let height = (node.getBoundingClientRect().height) - this.leftPadding - this.padding;
-        // console.log(width, height);
-        // const xScale = d3.scaleLinear()
-        //     .domain([-180, 180])
-        //     .range([0, (width)]);
-        //     // .range([0, (0.985 * width)]);
-        //
-        // const yScale = d3.scaleLinear()
-        //     .domain([180, -180])
-        //     .range([0, (height)]);
-        //     // .range([0, (0.985 * height)]);
-        // let url = 'https://raw.githubusercontent.com/ondraab/rama/master/public/data/';
         const img = new Image();
         const svgImg = new Image();
         switch (ramaContourPlotType) {
             case 1:
-                // url += 'rama8000-general-noGPIVpreP.csv';
                 img.src = HeatMapContours_1.generalContour;
                 svgImg.src = LineContours_1.lineGeneralContour;
                 break;
             case 2:
-                // url += 'rama8000-ileval-nopreP.csv';
                 img.src = HeatMapContours_1.ileVal;
                 svgImg.src = LineContours_1.lineIleVal;
                 break;
             case 3:
-                // url += 'rama8000-prepro-noGP.csv';
                 img.src = HeatMapContours_1.prePro;
                 svgImg.src = LineContours_1.linePrePro;
                 break;
             case 4:
-                // url += 'rama8000-gly-sym.csv';
                 img.src = HeatMapContours_1.gly;
                 svgImg.src = LineContours_1.lineGly;
                 break;
             case 5:
-                // url += 'rama8000-transpro.csv';
                 img.src = HeatMapContours_1.transPro;
                 svgImg.src = LineContours_1.lineTransPro;
                 break;
             case 6:
-                // url += 'rama8000-cispro.csv';
                 img.src = HeatMapContours_1.cisPro;
                 svgImg.src = LineContours_1.lineCisPro;
                 break;
             default:
                 return;
         }
-        const context = canvas.node().getContext('2d');
+        const context = RamachandranComponent.canvasContainer.node().getContext('2d');
         context.clearRect(0, 0, width + 80, height + 60);
         if (contourColorStyle == 2) {
             context.globalAlpha = 0.6;
@@ -925,167 +972,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             svgImg.onload = () => {
                 context.drawImage(svgImg, 0, 0, width, height * svgImg.height / svgImg.width);
             };
-            //
-            // setTimeout(function () {
-            //             // let s = new XMLSerializer().serializeToString(document.getElementById('rama-svg'));
-            //             // let encode = window.btoa(s);
-            //     let enc: any = document.getElementById('rama-canvas');
-            //     console.log(enc.toDataURL());
-            //         }, 3000);
-            // d3.csv(url, function (error: any, data: any) {
-            //     if (error) {
-            //         throw error;
-            //     }
-            //
-            //     data.sort(function (a: any, b: any) {
-            //         return b.value - a.value;
-            //     });
-            //     data.forEach(function (d: any) {
-            //         d.psi = +d.psi;
-            //         d.phi = +d.phi;
-            //         d.value = +d.value;
-            //     });
-            //     //
-            //     // scale(0.965, 0.965), translate(16, 16)
-            //     let scale = '';
-            //     switch (ramaContourPlotType) {
-            //         case '2':
-            //             data = data.slice(0, data.length / 2.7);
-            //             break;
-            //         case '3':
-            //             data = data.slice(0, data.length / 2.5);
-            //             break;
-            //         case '4':
-            //             data = data.slice(0, data.length / 1.5);
-            //             break;
-            //         case '5':
-            //             data = data.slice(0, data.length / 3.7);
-            //             break;
-            //         case '6':
-            //             data = data.slice(0, data.length / 2.2);
-            //             break;
-            //         default:
-            //
-            //             // console.log(data[0], data[data.length-1]);
-            //             data = data.slice(0, (data.length / 2.1) - 850);
-            //             // data.splice(0, data.length-1000);
-            //     }
-            //     let median = d3.median(data, function (d: any) {
-            //         return d.value;
-            //     });
-            //     let max = d3.max(data, function (d: any) {
-            //         return +d.value;
-            //     });
-            //     let min = d3.min(data, function (d: any) {
-            //         return +d.value;
-            //     });
-            //     //
-            //     // let line = d3.line();
-            //     console.log(data.length);
-            //     svg.selectAll('.shapes')
-            //         .data(d3Contour.contourDensity()
-            //             .x(function (d: any) {
-            //                 return xScale(d.phi);
-            //             })
-            //             .y(function (d: any) {
-            //                 return yScale(d.psi);
-            //             })
-            //             .size([height, width])
-            //             .thresholds(d3.range(median, max, 5))
-            //             .cellSize(1)
-            //             .bandwidth(6)
-            //             (data))
-            //         .enter()
-            //         .append('path')
-            //         .attr('fillColorFunction', '#1359eb')
-            //         .attr('fillColorFunction-width', '2')
-            //         .attr('fill', 'none')
-            //         .attr('class', 'contour-line')
-            //         .attr('margin', '30px')
-            //         .attr('d', d3.geoPath())
-            //         .attr('transform', scale)
-            //         .attr('clip-path', 'url(#clipRect)');
-            //     // svg.selectAll('.shapes')
-            //     //     .data(d3Contour.contourDensity()
-            //     //         .x(function (d: any) {
-            //     //             return xScale(d.phi);
-            //     //         })
-            //     //         .y(function (d: any) {
-            //     //             return yScale(d.psi);
-            //     //         })
-            //     //         .size([height, width])
-            //     //         .thresholds(d3.ticks(min, max, 1))
-            //     //         .thresholds(d3.range(min, max))
-            //     //         .cellSize(1)
-            //     //         .bandwidth(1)
-            //     //         (data))
-            //     //     //
-            //     //     .enter()
-            //     //     .append('path')
-            //     //     .attr('fillColorFunction', '#1359eb')
-            //     //     .attr('fillColorFunction-width', '2')
-            //     //     .attr('fill', 'none')
-            //     //     .attr('class', 'line')
-            //     //     .attr('id', 'contour-basis-line')
-            //     //     .attr('margin', '30px')
-            //     //     .attr('d', d3.geoPath())
-            //     //     .attr('transform', scale);
-            //     let pa: any = document.getElementById('contour-basis-line');
-            //     // scale(0.99, 0.99),
-            //     switch (ramaContourPlotType) {
-            //         //
-            //         case '3':
-            //             data = data.slice(0, data.length / 2.9);
-            //             break;
-            //         case '2':
-            //             data = data.slice(0, data.length / 3);
-            //             break;
-            //         case '4':
-            //             data = data.slice(0, data.length / 1.65);
-            //             break;
-            //         case '5':
-            //             data = data.slice(0, data.length / 1.8);
-            //             break;
-            //         case '6':
-            //             data = data.slice(0, data.length / 2.2);
-            //             break;
-            //         default:
-            //             data = data.slice(0, data.length / 2.7);
-            //             break;
-            //     }
-            //     console.log(data.length);
-            //     svg.selectAll('.shapes')
-            //         .data(d3Contour.contourDensity()
-            //             .x(function (d: any) {
-            //                 return xScale(d.phi);
-            //             })
-            //             .y(function (d: any) {
-            //                 return yScale(d.psi);
-            //             })
-            //             .size([height, width])
-            //             .thresholds(d3.range(median, max, 5))
-            //             .cellSize(1)
-            //             .bandwidth(6)
-            //             (data))
-            //         .enter()
-            //         .append('path')
-            //         .attr('fillColorFunction', '#3ee2eb')
-            //         .attr('fillColorFunction-width', '2')
-            //         .attr('fill', 'none')
-            //         .attr('class', 'contour-line')
-            //         .attr('margin', '30px')
-            //         .attr('d', d3.geoPath())
-            //         .attr('transform', scale);
-            //    // scale(0.99,0.99),
-            // });
-            // if (ramaContourPlotType !== '1') {
-            //     setTimeout(function () {
-            //         let s = new XMLSerializer().serializeToString(document.getElementById('rama-svg'));
-            //         let encode = window.btoa(s);
-            //         console.log('data:image/svg+xml;base64,' + encode);
-            //     },         3000);
-            // }
-            //
         }
     }
     addTable(sortedTable, drawingType) {
