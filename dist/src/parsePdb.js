@@ -19,6 +19,7 @@ var Res = function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId) {
     this.modelId = modelId;
     this.spProp = false;
     this.idSlector = '';
+    this.prePro = false;
 };
 
 var ParsePDB = function () {

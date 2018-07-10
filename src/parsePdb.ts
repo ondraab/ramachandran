@@ -13,6 +13,7 @@ class Res {
     private modelId: number;
     private spProp: boolean;
     private idSlector: string;
+    private prePro: boolean;
 
     constructor(aa: string, phi: number, psi: number, rama: string, chain: string, num: number, cisPeptide: string,
                 modelId: number) {
@@ -26,6 +27,7 @@ class Res {
         this.modelId = modelId;
         this.spProp = false;
         this.idSlector = '';
+        this.prePro = false;
     }
 }
 

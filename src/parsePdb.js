@@ -12,6 +12,7 @@ class Res {
         this.modelId = modelId;
         this.spProp = false;
         this.idSlector = '';
+        this.prePro = false;
     }
 }
 class ParsePDB {
