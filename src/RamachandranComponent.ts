@@ -16,7 +16,7 @@ class RamachandranComponent extends PolymerElement {
     private chainsToShow;
     private modelsToShow: number[];
     private ramaContourPlotType;
-    private contourColoringStyle;
+    private static contourColoringStyle;
     private residueColorStyle;
 
     //helpers
@@ -57,7 +57,7 @@ class RamachandranComponent extends PolymerElement {
         this.sidechainOutliers = 0;
 
         this.ramaContourPlotType = 1;
-        this.contourColoringStyle = 1;
+        RamachandranComponent.contourColoringStyle = 1;
         this.residueColorStyle = 1;
 
         this.modelsToShowNumbers = [];
@@ -346,7 +346,7 @@ class RamachandranComponent extends PolymerElement {
             this.ramaContourPlotType = parseInt(d3.select('#rama-plot-type').property('value'));
             this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers,
                 this.residueColorStyle);
-            this.basicContours(this.ramaContourPlotType, this.contourColoringStyle);
+            this.basicContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         });
 
         let ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
@@ -364,13 +364,13 @@ class RamachandranComponent extends PolymerElement {
             .classed('rama-contour-radio', true);
 
         ramaForm.on('change', () => {
-            this.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
-            this.basicContours(this.ramaContourPlotType, this.contourColoringStyle);
+            RamachandranComponent.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
+            this.basicContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         });
 
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers,
             this.residueColorStyle);
-        this.basicContours(this.ramaContourPlotType, this.contourColoringStyle);
+        this.basicContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
     }
 
     /**
@@ -453,7 +453,7 @@ class RamachandranComponent extends PolymerElement {
         this.svgContainer.selectAll('g.dataGroup').remove();
 
         let width = 500;
-        const { jsonObject, fillColorFunction, outliersType, rsrz, basicContours, contourColoringStyle, tooltip} = this;
+        const { jsonObject, fillColorFunction, outliersType, rsrz, basicContours, tooltip} = this;
         const clickEvents = ['PDB.litemol.click', 'PDB.topologyViewer.click'];
         const mouseOutEvents = ['PDB.topologyViewer.mouseout', 'PDB.litemol.mouseout'];
         let { highlightedResidues } = this;
@@ -506,32 +506,35 @@ class RamachandranComponent extends PolymerElement {
          * @returns {any}
          */
         function switchPlotType(d: any, i: number) {
+            let prePro = false;
+            if (i + 1 != jsonObject.length && jsonObject[i + 1].aa == 'PRO') {
+                d.prePro = true;
+                prePro = true;
+            }
             switch (ramaContourPlotType) {
                 case 1:
                     return d;
                 case 2:
-                    if (d.aa === 'ILE' || d.aa === 'VAL') {
+                    if (d.aa == 'ILE' || d.aa == 'VAL') {
                         return d;
                     }
                     break;
                 case 3:
-                    if (i + 1 !== jsonObject.length && jsonObject[i + 1].aa === 'PRO') {
-                        d.prePro = true;
+                    if (prePro)
                         return d;
-                    }
                     break;
                 case 4:
-                    if (d.aa === 'GLY') {
+                    if (d.aa == 'GLY') {
                         return d;
                     }
                     break;
                 case 5:
-                    if (d.cisPeptide === null && d.aa === 'PRO') {
+                    if (d.cisPeptide == null && d.aa == 'PRO') {
                         return d;
                     }
                     break;
                 case 6:
-                    if (d.cisPeptide === 'Y' && d.aa === 'PRO') {
+                    if (d.cisPeptide == 'Y' && d.aa == 'PRO') {
                         return d;
                     }
                     break;
@@ -555,10 +558,14 @@ class RamachandranComponent extends PolymerElement {
         /**
          * return timeoutid when hovering
          * @param {number} ramaContourPlotType
+         * @param {string} aa
          * @returns {number}
          */
-        function getTimeout(ramaContourPlotType: number) {
-            return window.setTimeout( () => {basicContours(ramaContourPlotType, contourColoringStyle)}, 800);
+        function getTimeout(ramaContourPlotType: number, aa: string = '') {
+            return window.setTimeout( () => {
+                basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+                changeOpacity(aa);
+            }, 800);
         }
 
 
@@ -582,52 +589,58 @@ class RamachandranComponent extends PolymerElement {
          * @param data selected node
          * @param toDefault true if used for return to base state
          */
-        function changeContoursToDefault(data: any, toDefault: boolean = true) {
+        function changeContours(data: any, toDefault: boolean = true) {
             switch (data.aa) {
                 case 'ILE':
                 case 'VAL':
                     if (ramaContourPlotType != 2) {
-                        if (toDefault)
-                            basicContours(ramaContourPlotType, contourColoringStyle);
-                        else
-                            timeoutId = getTimeout(2);
+                        if (toDefault){
+                            basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+                            changeOpacity('VAL,ILE', false);
+                        } else {
+                            timeoutId = getTimeout(2, 'VAL,ILE');
+                        }
                     }
-                    break;
+                    return;
                 case 'GLY':
                     if (ramaContourPlotType != 4) {
-                        if (toDefault)
-                            basicContours(ramaContourPlotType, contourColoringStyle);
-                        else
-                            timeoutId = getTimeout(4);
+                        if (toDefault){
+                            basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+                            changeOpacity('GLY', false);
+                        } else {
+                            timeoutId = getTimeout(4, 'GLY');
+                        }
                     }
-                    break;
+                    return;
                 case 'PRO':
                     if (ramaContourPlotType < 5) {
-                        if (toDefault)
-                            basicContours(ramaContourPlotType, contourColoringStyle);
+                        if (toDefault) {
+                            basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+                            changeOpacity('PRO', false);
+                        }
                         else {
                             if (data.cisPeptide === null && data.aa === 'PRO') {
-                                timeoutId = getTimeout(5);
+                                timeoutId = getTimeout(5, 'PRO');
                                 break;
                             }
                             if (data.cisPeptide === 'Y' && data.aa === 'PRO') {
-                                timeoutId = getTimeout(6);
+                                timeoutId = getTimeout(6, 'PRO');
                                 break;
                             }
                         }
                     }
-                    break;
+                    return;
                 default:
                     break;
             }
             switch (data.prePro) {
                 case true:
                     if (ramaContourPlotType != 3) {
-                        if (toDefault)
-                            basicContours(ramaContourPlotType, contourColoringStyle);
-                        else
-                            timeoutId = getTimeout(3);
-
+                        if (toDefault) {
+                            basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+                            changeOpacity('', false);
+                        } else
+                            timeoutId = getTimeout(3, '');
                     }
                     break;
                 default:
@@ -635,6 +648,44 @@ class RamachandranComponent extends PolymerElement {
             }
         }
 
+
+        /**
+         * function to change opacity while hovering
+         * @param {string} aa
+         * @param {boolean} makeInvisible
+         */
+        function changeOpacity(aa: string, makeInvisible: boolean = true) {
+            let residues = aa.split(',');
+            let nodes;
+            if (aa == '')
+            {
+                nodes = document.querySelectorAll('g.dataGroup path');
+                nodes = Array.from(nodes).filter((d: any) => {
+                    return (d.__data__.prePro == false)
+                });
+            } else if (residues.length > 1) {
+                nodes = document.querySelectorAll(
+                    'g.dataGroup :not([id^=' + residues[0] + '])');
+                nodes = Array.from(nodes).filter((d: any) => {
+                    return !d.id.includes(residues[1]);
+                });
+            } else {
+                nodes = document.querySelectorAll('g.dataGroup :not([id^=' + aa + '])');
+            }
+            [].forEach.call(nodes, (d: any) => {
+                if (makeInvisible)
+                    d.style.opacity = 0;
+                else {
+                    if (d.style.fill == 'rgb(0, 128, 0)' || d.style.fill == 'black' || d.style.fill == 'rgb(0, 0, 0)') {
+                        d.style.opacity = 0.15;
+                    } else if (d.style.fill == 'rgb(255, 255, 0)') {
+                        d.style.opacity = 0.8;
+                    }else {
+                        d.style.opacity = 1;
+                    }
+                }
+            })
+        }
 
         /**
          * change object size on hover
@@ -708,6 +759,7 @@ class RamachandranComponent extends PolymerElement {
             if (typeof event.eventData.chainId == 'undefined')
                 return null;
             return d3.select('path#' +
+                event.eventData.residueName + '-' +
                 event.eventData.chainId + '-' +
                 event.eventData.entityId + '-' +
                 event.eventData.residueNumber);
@@ -751,7 +803,7 @@ class RamachandranComponent extends PolymerElement {
             .attr('class', 'dataGroup')
             .append('path')
             .attr('id', (d) => {
-                const id = d.chain + '-' + d.modelId + '-' + d.num;
+                const id = d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num;
                 d.idSlector = id;
                 if (drawingType !== 3) {
                     if (d.rama === 'OUTLIER') {
@@ -791,7 +843,7 @@ class RamachandranComponent extends PolymerElement {
                 let highlightColor = 'yellow';
                 dispatchCustomEvent('PDB.ramaViewer.mouseOver', d);
                 now = new Date().getTime();
-                changeContoursToDefault(d, false);
+                changeContours(d, false);
                 switch (drawingType) {
                     case 1:
                         if (d.rama === 'Favored') {
@@ -885,7 +937,7 @@ class RamachandranComponent extends PolymerElement {
                     // .duration(50)
                         .style('opacity', 0);
                     if ((outTime - now) > 800) {
-                        changeContoursToDefault(d);
+                        changeContours(d);
                     }
                 }
             );
@@ -1045,7 +1097,6 @@ class RamachandranComponent extends PolymerElement {
 
     private basicContours(ramaContourPlotType: number, contourColorStyle: number) {
         RamachandranComponent.clearCanvas();
-
         let width = 500, height = 500;
 
         if (width > 768) {
