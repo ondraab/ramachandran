@@ -413,7 +413,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 return window.setTimeout(function () {
                     basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
                     changeOpacity(aa);
-                }, 800);
+                }, 600);
             }
             /**
              * throw new event with defined data
