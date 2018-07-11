@@ -474,7 +474,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             return window.setTimeout(() => {
                 basicContours(ramaContourPlotType, RamachandranComponent.contourColoringStyle);
                 changeOpacity(aa);
-            }, 800);
+            }, 600);
         }
         /**
          * throw new event with defined data
