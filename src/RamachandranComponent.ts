@@ -936,9 +936,10 @@ class RamachandranComponent extends PolymerElement {
                     tooltip.transition()
                     // .duration(50)
                         .style('opacity', 0);
-                    if ((outTime - now) > 800) {
-                        changeContours(d);
-                    }
+                console.log(outTime - now);
+                if ((outTime - now) > 600) {
+                    changeContours(d);
+                }
                 }
             );
             // .on('click', function(d: any) {
