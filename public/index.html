@@ -24,6 +24,16 @@
             });
         }());
     </script>
+      <script src="../node_modules/ProtVista/build/protvista.js"></script>
+      <link href="../node_modules/ProtVista/build/css/main.css" rel="stylesheet"/>
+
+      <div id=yourDiv style="display: inline-block;"></div>
+      <script>
+          // you can
+          var yourDiv = document.getElementById("yourDiv");
+          var ProtVista = require('ProtVista');
+          new ProtVista({el: yourDiv, uniprotacc : 'P08684'});
+      </script>
 
   </head>
   <body>

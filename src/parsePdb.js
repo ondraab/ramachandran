@@ -11,7 +11,7 @@ class Res {
         this.cisPeptide = cisPeptide;
         this.modelId = modelId;
         this.spProp = false;
-        this.idSlector = '';
+        this.idSelector = '';
         this.prePro = false;
     }
 }
