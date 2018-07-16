@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Res {
-    constructor(aa, phi, psi, rama, chain, num, cisPeptide, modelId) {
+    constructor(aa, phi, psi, rama, chain, num, cisPeptide, modelId, authorResNum) {
         this.aa = aa;
         this.phi = phi;
         this.psi = psi;
@@ -13,6 +13,7 @@ class Res {
         this.spProp = false;
         this.idSelector = '';
         this.prePro = false;
+        this.authorResNum = authorResNum;
     }
 }
 class ParsePDB {
@@ -43,7 +44,7 @@ class ParsePDB {
                             this._modelArray.push(mod.model_id);
                         }
                         for (const resid of mod.residues) {
-                            this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id));
+                            this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id, resid.author_residue_number));
                         }
                     }
                 }

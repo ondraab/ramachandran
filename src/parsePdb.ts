@@ -14,9 +14,10 @@ class Res {
     private spProp: boolean;
     private idSelector: string;
     private prePro: boolean;
+    private authorResNum: number;
 
     constructor(aa: string, phi: number, psi: number, rama: string, chain: string, num: number, cisPeptide: string,
-                modelId: number) {
+                modelId: number, authorResNum: number) {
         this.aa = aa;
         this.phi = phi;
         this.psi = psi;
@@ -28,6 +29,7 @@ class Res {
         this.spProp = false;
         this.idSelector = '';
         this.prePro = false;
+        this.authorResNum = authorResNum;
     }
 }
 
@@ -72,7 +74,8 @@ export class ParsePDB {
                                 chain.chain_id,
                                 resid.residue_number,
                                 resid.cis_peptide,
-                                mod.model_id
+                                mod.model_id,
+                                resid.author_residue_number
                             ));
                         }
                     }
