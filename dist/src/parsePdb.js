@@ -6,7 +6,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 
-var Res = function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId) {
+var Res = function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId, authorResNum) {
     _classCallCheck(this, Res);
 
     this.aa = aa;
@@ -18,8 +18,9 @@ var Res = function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId) {
     this.cisPeptide = cisPeptide;
     this.modelId = modelId;
     this.spProp = false;
-    this.idSlector = '';
+    this.idSelector = '';
     this.prePro = false;
+    this.authorResNum = authorResNum;
 };
 
 var ParsePDB = function () {
@@ -80,7 +81,7 @@ var ParsePDB = function () {
                                             for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                                                 var resid = _step5.value;
 
-                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id));
+                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mol.entity_id, resid.author_residue_number));
                                             }
                                         } catch (err) {
                                             _didIteratorError5 = true;
