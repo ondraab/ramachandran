@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../../examples/biojs/simple.js"],"names":["pdblinks","require"],"mappings":";;AAAA,IAAIA,WAAWC,QAAQ,wBAAR,CAAf","file":"simple.js","sourcesContent":["var pdblinks = require(\"ramachandran-component\");"]}

@@ -34,6 +34,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
             var _this2 = this;
 
             _get(RamachandranComponent.prototype.__proto__ || Object.getPrototypeOf(RamachandranComponent.prototype), "connectedCallback", this).call(this);
+            RamachandranComponent.height = this.width;
+            RamachandranComponent.width = this.width;
             this.createChart = this.createChart.bind(this);
             this.fillColorFunction = this.fillColorFunction.bind(this);
             var pdb = new parsePdb_1.default(this.pdbId);
@@ -112,13 +114,15 @@ var RamachandranComponent = function (_polymer_element_js_) {
         value: function createChart() {
             var _this3 = this;
 
-            var width = 500,
-                height = 500;
-            if (width > 768) {
-                width = 580;
+            var width = RamachandranComponent.width,
+                height = RamachandranComponent.height;
+            if (typeof width == 'undefined') {
+                RamachandranComponent.width = 500;
+                width = 500;
             }
-            if (height > 768) {
-                height = 580;
+            if (typeof height == 'undefined') {
+                RamachandranComponent.height = 500;
+                height = 500;
             }
             // setup x
             var xScale = d3.scaleLinear().domain([-180, 180]).range([0, width]);
@@ -148,16 +152,17 @@ var RamachandranComponent = function (_polymer_element_js_) {
             function makeXGridlines() {
                 return d3.axisTop(xScale);
             }
-            this.svgContainer = d3.select('ramachandran-component').append('div').attr('id', 'rama-svg-container').attr('height', height).attr('border', '1px solid black').append('svg').attr('max-width', width).classed('svg-container', true).attr('id', 'rama-svg').attr('preserveAspectRatio', 'xMinYMin meet').attr('viewBox', '0 0 ' + width + ' ' + height).classed('svg-content-responsive', true).style('overflow', 'visible');
-            RamachandranComponent.canvasContainer = d3.select('#rama-svg-container').append('canvas').classed('img-responsive', true).attr('id', 'rama-canvas').attr('width', width).attr('height', height).classed('svg-content-responsive', true).attr('preserveAspectRatio', 'xMinYMin meet').attr('viewBox', '0 0 ' + width + ' ' + height).style('padding', '30px 30px 30px 50px').style('overflow', 'visible');
+            //
+            this.svgContainer = d3.select('ramachandran-component').append('div').attr('id', 'rama-svg-container').style('max-width', width + "px").style('width', '100%').append('svg').classed('svg-container', true).attr('id', 'rama-svg').style('max-width', width + "px").style('width', '100%').style('padding', '30px 30px 30px 50px').attr('preserveAspectRatio', 'xMinYMin meet').attr('viewBox', "0 0 " + width + " " + height).classed('svg-content-responsive', true).style('overflow', 'visible');
+            RamachandranComponent.canvasContainer = d3.select('#rama-svg-container').append('canvas').classed('img-responsive', true).attr('id', 'rama-canvas').attr('width', width).style('max-width', width - 90 + "px").attr('height', height).classed('svg-content-responsive', true).attr('preserveAspectRatio', 'xMinYMin meet').attr('viewBox', "0 0 " + width + " " + height).style('overflow', 'visible');
             // // add axes
             this.svgContainer.append('g').call(xTopAxis).attr('id', 'x-axis');
-            this.svgContainer.append('g').attr('transform', 'translate(0,' + height + ')').call(xBottomAxis).attr('id', 'x-axis');
+            this.svgContainer.append('g').attr('transform', "translate(0, " + height + ")").call(xBottomAxis).attr('id', 'x-axis');
             this.svgContainer.append('g').call(yLeftAxis).attr('id', 'y-axis');
             this.svgContainer.append('g').attr('transform', function () {
-                return 'translate(' + width + ', 0)';
+                return "translate(" + width + ", 0)";
             }).call(yRightAxis).attr('id', 'y-axis');
-            this.svgContainer.append('g').attr('class', 'rama-grid').attr('transform', 'translate(0,' + height + ')').call(makeXGridlines().tickSize(width));
+            this.svgContainer.append('g').attr('class', 'rama-grid').attr('transform', "translate(0, " + height + ")").call(makeXGridlines().tickSize(width));
             this.svgContainer.append('g').attr('class', 'rama-grid').call(makeYGridlines().tickSize(height));
             // axis labels
             // phi label
@@ -213,6 +218,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
             this.addEventListeners();
+            d3.select('#rama-canvas').style('max-width', width + "px").style('width', '100.5%').style('padding', '30px 30px 30px 50px');
         }
         /**
          * change residues in chart
@@ -234,23 +240,18 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.clashes = 0;
             RamachandranComponent.residuesOnCanvas = [];
             RamachandranComponent.outliersList = [];
-            var width = 500;
+            // let width = 500;
             var fillColorFunction = this.fillColorFunction,
                 outliersType = this.outliersType,
                 rsrz = this.rsrz,
                 tooltip = this.tooltip,
-                residueColorStyle = this.residueColorStyle;
+                residueColorStyle = this.residueColorStyle,
+                width = this.width;
 
             var jsonObject = RamachandranComponent.jsonObject;
             var onMouseOutResidue = this.onMouseOutResidue,
                 onMouseOverResidue = this.onMouseOverResidue;
 
-            if (width > 768) {
-                width = 580;
-            }
-            // if (height > 768) {
-            //     height = 580;
-            // }
             var pdbId = this.pdbId;
             // scales
             var xScale = d3.scaleLinear().domain([-180, 180]).range([0, width]);
@@ -764,7 +765,6 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
             });
             tooltip.transition().style('opacity', 0);
-            console.log(outTime - RamachandranComponent.currentTime);
             if (outTime - RamachandranComponent.currentTime > 600) {
                 window.setTimeout(function () {
                     RamachandranComponent.changeContours(d, true, ramaContourPlotType);
@@ -986,14 +986,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
         key: "baseContours",
         value: function baseContours(ramaContourPlotType, contourColorStyle) {
             RamachandranComponent.clearCanvas();
-            var width = 500,
-                height = 500;
-            if (width > 768) {
-                width = 580;
-            }
-            if (height > 768) {
-                height = 580;
-            }
+            var width = RamachandranComponent.width,
+                height = RamachandranComponent.height;
             var img = new Image();
             var svgImg = new Image();
             switch (ramaContourPlotType) {
@@ -1275,20 +1269,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     reflectToAttribute: true,
                     notify: true
                 },
-                residueColorStyle: {
+                width: {
                     type: Number,
-                    reflectToAttribute: true
-                },
-                contourColoringStyle: {
-                    type: Number,
-                    reflectToAttribute: true
-                },
-                ramaContourPlotType: {
-                    type: Number,
-                    reflectToAttribute: true
-                },
-                element: {
-                    type: HTMLElement,
                     reflectToAttribute: true
                 }
             };

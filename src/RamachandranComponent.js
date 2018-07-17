@@ -28,26 +28,16 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 reflectToAttribute: true,
                 notify: true
             },
-            residueColorStyle: {
+            width: {
                 type: Number,
-                reflectToAttribute: true
-            },
-            contourColoringStyle: {
-                type: Number,
-                reflectToAttribute: true
-            },
-            ramaContourPlotType: {
-                type: Number,
-                reflectToAttribute: true
-            },
-            element: {
-                type: HTMLElement,
                 reflectToAttribute: true
             },
         };
     }
     connectedCallback() {
         super.connectedCallback();
+        RamachandranComponent.height = this.width;
+        RamachandranComponent.width = this.width;
         this.createChart = this.createChart.bind(this);
         this.fillColorFunction = this.fillColorFunction.bind(this);
         const pdb = new parsePdb_1.default(this.pdbId);
@@ -118,12 +108,14 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * creates basic chart, add axes, creates tooltip
      */
     createChart() {
-        let width = 500, height = 500;
-        if (width > 768) {
-            width = 580;
+        let width = RamachandranComponent.width, height = RamachandranComponent.height;
+        if (typeof width == 'undefined') {
+            RamachandranComponent.width = 500;
+            width = 500;
         }
-        if (height > 768) {
-            height = 580;
+        if (typeof height == 'undefined') {
+            RamachandranComponent.height = 500;
+            height = 500;
         }
         // setup x
         const xScale = d3.scaleLinear()
@@ -152,16 +144,19 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         function makeXGridlines() {
             return d3.axisTop(xScale);
         }
+        //
         this.svgContainer = d3.select('ramachandran-component').append('div')
             .attr('id', 'rama-svg-container')
-            .attr('height', height)
-            .attr('border', '1px solid black')
+            .style('max-width', `${width}px`)
+            .style('width', '100%')
             .append('svg')
-            .attr('max-width', width)
             .classed('svg-container', true)
             .attr('id', 'rama-svg')
+            .style('max-width', `${width}px`)
+            .style('width', '100%')
+            .style('padding', '30px 30px 30px 50px')
             .attr('preserveAspectRatio', 'xMinYMin meet')
-            .attr('viewBox', '0 0 ' + width + ' ' + height)
+            .attr('viewBox', `0 0 ${width} ${height}`)
             .classed('svg-content-responsive', true)
             .style('overflow', 'visible');
         RamachandranComponent.canvasContainer = d3.select('#rama-svg-container')
@@ -169,30 +164,30 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .classed('img-responsive', true)
             .attr('id', 'rama-canvas')
             .attr('width', width)
+            .style('max-width', `${width - 90}px`)
             .attr('height', height)
             .classed('svg-content-responsive', true)
             .attr('preserveAspectRatio', 'xMinYMin meet')
-            .attr('viewBox', '0 0 ' + width + ' ' + height)
-            .style('padding', '30px 30px 30px 50px')
+            .attr('viewBox', `0 0 ${width} ${height}`)
             .style('overflow', 'visible');
         // // add axes
         this.svgContainer.append('g')
             .call(xTopAxis)
             .attr('id', 'x-axis');
         this.svgContainer.append('g')
-            .attr('transform', 'translate(0,' + (height) + ')')
+            .attr('transform', `translate(0, ${height})`)
             .call(xBottomAxis)
             .attr('id', 'x-axis');
         this.svgContainer.append('g')
             .call(yLeftAxis)
             .attr('id', 'y-axis');
         this.svgContainer.append('g')
-            .attr('transform', () => 'translate(' + (width) + ', 0)')
+            .attr('transform', () => `translate(${width}, 0)`)
             .call(yRightAxis)
             .attr('id', 'y-axis');
         this.svgContainer.append('g')
             .attr('class', 'rama-grid')
-            .attr('transform', 'translate(0,' + height + ')')
+            .attr('transform', `translate(0, ${height})`)
             .call(makeXGridlines()
             .tickSize(width));
         this.svgContainer.append('g')
@@ -278,6 +273,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
         RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         this.addEventListeners();
+        d3.select('#rama-canvas')
+            .style('max-width', `${width}px`)
+            .style('width', '100.5%')
+            .style('padding', '30px 30px 30px 50px');
     }
     /**
      * change residues in chart
@@ -296,16 +295,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.clashes = 0;
         RamachandranComponent.residuesOnCanvas = [];
         RamachandranComponent.outliersList = [];
-        let width = 500;
-        const { fillColorFunction, outliersType, rsrz, tooltip, residueColorStyle } = this;
+        // let width = 500;
+        const { fillColorFunction, outliersType, rsrz, tooltip, residueColorStyle, width } = this;
         const jsonObject = RamachandranComponent.jsonObject;
         let { onMouseOutResidue, onMouseOverResidue } = this;
-        if (width > 768) {
-            width = 580;
-        }
-        // if (height > 768) {
-        //     height = 580;
-        // }
         const pdbId = this.pdbId;
         // scales
         const xScale = d3.scaleLinear()
@@ -455,13 +448,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      */
     static baseContours(ramaContourPlotType, contourColorStyle) {
         RamachandranComponent.clearCanvas();
-        let width = 500, height = 500;
-        if (width > 768) {
-            width = 580;
-        }
-        if (height > 768) {
-            height = 580;
-        }
+        let width = RamachandranComponent.width, height = RamachandranComponent.height;
         const img = new Image();
         const svgImg = new Image();
         switch (ramaContourPlotType) {
@@ -1045,7 +1032,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         });
         tooltip.transition()
             .style('opacity', 0);
-        console.log(outTime - RamachandranComponent.currentTime);
         if ((outTime - RamachandranComponent.currentTime) > 600) {
             window.setTimeout(() => {
                 RamachandranComponent.changeContours(d, true, ramaContourPlotType);
