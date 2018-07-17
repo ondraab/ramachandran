@@ -5,44 +5,8 @@
     <title>Ramachandran component</title>
     <script src="../node_modules/@webcomponents/custom-elements/custom-elements.min.js"></script>
     <script src="bundle.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="../node_modules/pdb-lite-mol/build/pdb.litemol.min.css">
-    <link rel="stylesheet" type="text/css" href="../node_modules/pdb-topology-viewer/build/pdb.topology.viewer.min.css">
-
-    <script src="../node_modules/angular/angular.min.js"></script>
-    <script src="../node_modules/document-register-element/build/document-register-element.js"></script>
-    <!--<script src="../node_modules/d3/dist/d3.min.js"></script>-->
-    <script src="../node_modules/pdb-topology-viewer/bower_components/d3/d3.min.js"></script>
-    <script src="../node_modules/pdb-lite-mol/build/pdb.litemol.min.js"></script>
-    <script src="../node_modules/pdb-topology-viewer/build/pdb.topology.viewer.min.js"></script>
-
-    <script>
-        (function () {
-            'use strict';
-            angular.element(document).ready(function () {
-                angular.bootstrap(document, ['pdb.litemol', 'pdb.topology.viewer']);
-            });
-        }());
-    </script>
-      <script src="../node_modules/ProtVista/build/protvista.js"></script>
-      <link href="../node_modules/ProtVista/build/css/main.css" rel="stylesheet"/>
-
-      <!--<div id=yourDiv style="display: inline-block;"></div>-->
-      <!--<script>-->
-          <!--// you can-->
-          <!--var yourDiv = document.getElementById("yourDiv");-->
-          <!--var ProtVista = require('ProtVista');-->
-          <!--new ProtVista({el: yourDiv, uniprotacc : 'P08684'});-->
-      <!--</script>-->
-
   </head>
   <body>
-  <!--<div style="position:absolute;height:400px;width:500px;margin-top: 10px; margin-left: 1115px">-->
-  <!--<pdb-topology-viewer entry-id="1tqn" entity-id="1"></pdb-topology-viewer>-->
-  <!--</div>-->
-  <!--<div style="position:absolute;height:400px;width:500px;margin-left: 570px;margin-top: 10px;">-->
-    <!--<pdb-lite-mol pdb-id="'1tqn'" is-expanded="false"></pdb-lite-mol>-->
-  <!--</div>-->
 
   <ramachandran-component pdb-id="1tqn" chains-to-show='["A"]' models-to-show='["1"]' style="position: absolute;" id="main-rama"></ramachandran-component>
 
