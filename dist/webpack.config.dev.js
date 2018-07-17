@@ -9,7 +9,7 @@ module.exports = {
     mode: "development",
     output: {
         path: path.resolve(__dirname, "./build"),
-        filename: "bundle.js",
+        filename: "ramachandran-component.js",
         publicPath: '/'
     },
     resolve: {

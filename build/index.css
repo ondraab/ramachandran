@@ -84,14 +84,7 @@ div.outliers-container {
   padding: 0 2px 0 2px;
 }
 
-#rama-svg {
-  max-width: 468px;
-}
 #rama-svg-container {
-  /*width: 100%;*/
-  max-width: 550px;
-  /*height: 100%;*/
-  /*position: absolute;*/
   margin: 10px 0 0 5px;
   border: 1px solid #7c827e;
 }
@@ -146,7 +139,6 @@ canvas#rama-canvas {
   position: absolute;
   vertical-align: top;
   overflow: visible;
-  margin: 30px 30px 30px 50px;
 }
 
 label.btn.btn-default {
