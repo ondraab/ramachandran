@@ -27,13 +27,13 @@
       <script src="../node_modules/ProtVista/build/protvista.js"></script>
       <link href="../node_modules/ProtVista/build/css/main.css" rel="stylesheet"/>
 
-      <div id=yourDiv style="display: inline-block;"></div>
-      <script>
-          // you can
-          var yourDiv = document.getElementById("yourDiv");
-          var ProtVista = require('ProtVista');
-          new ProtVista({el: yourDiv, uniprotacc : 'P08684'});
-      </script>
+      <!--<div id=yourDiv style="display: inline-block;"></div>-->
+      <!--<script>-->
+          <!--// you can-->
+          <!--var yourDiv = document.getElementById("yourDiv");-->
+          <!--var ProtVista = require('ProtVista');-->
+          <!--new ProtVista({el: yourDiv, uniprotacc : 'P08684'});-->
+      <!--</script>-->
 
   </head>
   <body>
@@ -43,6 +43,8 @@
   <!--<div style="position:absolute;height:400px;width:500px;margin-left: 570px;margin-top: 10px;">-->
     <!--<pdb-lite-mol pdb-id="'1tqn'" is-expanded="false"></pdb-lite-mol>-->
   <!--</div>-->
-    <ramachandran-component pdb-id="1tqn" chains-to-show='["A"]' models-to-show='["1"]' style="position: absolute;"></ramachandran-component>
+
+  <ramachandran-component pdb-id="1tqn" chains-to-show='["A"]' models-to-show='["1"]' style="position: absolute;" id="main-rama"></ramachandran-component>
+
   </body>
 </html>

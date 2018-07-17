@@ -44,7 +44,7 @@ class ParsePDB {
                             this._modelArray.push(mod.model_id);
                         }
                         for (const resid of mod.residues) {
-                            this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id, resid.author_residue_number));
+                            this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mol.entity_id, resid.author_residue_number));
                         }
                     }
                 }
