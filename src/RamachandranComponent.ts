@@ -1115,7 +1115,7 @@ class RamachandranComponent extends PolymerElement {
      */
     public onMouseOverResidue(d: any, pdbId: string, ramaContourPlotType: number, residueColorStyle: number,
                               tooltip: any, outliersType: any, rsrz: any){
-        let highlightColor = 'yellow';
+        let highlightColor: any = 'yellow';
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
         RamachandranComponent.changeContours(d, false, ramaContourPlotType);
         switch (residueColorStyle) {
@@ -1132,7 +1132,22 @@ class RamachandranComponent extends PolymerElement {
                 break;
             case 2:
                 let tempStr = '';
-                highlightColor = 'magenta';
+                highlightColor = function () {
+                    if (typeof outliersType[d.num] === 'undefined') {
+                        return '#008000';
+                    } else {
+                        switch (outliersType[d.num].outliersType.length) {
+                            case 0:
+                                return '#008000';
+                            case 1:
+                                return '#ff0';
+                            case 2:
+                                return '#f80';
+                            default:
+                                return '#850013';
+                        }
+                    }
+                };
                 if (typeof outliersType[d.num] === 'undefined') {
                     tooltip.html(RamachandranComponent.tooltipText(d));
                     break;

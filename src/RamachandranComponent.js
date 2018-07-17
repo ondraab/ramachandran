@@ -949,7 +949,23 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 break;
             case 2:
                 let tempStr = '';
-                highlightColor = 'magenta';
+                highlightColor = function () {
+                    if (typeof outliersType[d.num] === 'undefined') {
+                        return '#008000';
+                    }
+                    else {
+                        switch (outliersType[d.num].outliersType.length) {
+                            case 0:
+                                return '#008000';
+                            case 1:
+                                return '#ff0';
+                            case 2:
+                                return '#f80';
+                            default:
+                                return '#850013';
+                        }
+                    }
+                };
                 if (typeof outliersType[d.num] === 'undefined') {
                     tooltip.html(RamachandranComponent.tooltipText(d));
                     break;
@@ -1301,4 +1317,3 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
     }
 }
 window.customElements.define('ramachandran-component', RamachandranComponent);
-ndow.customElements.define('ramachandran-component', RamachandranComponent);
