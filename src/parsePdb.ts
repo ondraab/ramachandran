@@ -3,49 +3,83 @@ interface Dictionary {
 }
 
 class Res {
-    private aa: string;
+    get residueColor(): string {
+        return this._residueColor;
+    }
+
+    set residueColor(value: string) {
+        this._residueColor = value;
+    }
+    get prePro(): boolean {
+        return this._prePro;
+    }
+    get num(): number {
+        return this._num;
+    }
+
+    set num(value: number) {
+        this._num = value;
+    }
+    get aa(): string {
+        return this._aa;
+    }
+
+    set aa(value: string) {
+        this._aa = value;
+    }
+    set prePro(value: boolean) {
+        this._prePro = value;
+    }
+    private _aa: string;
     private phi: number;
     private psi: number;
     private rama: string;
     private chain: string;
-    private num: number;
+    private _num: number;
     private cisPeptide: string;
     private modelId: number;
-    private spProp: boolean;
+    private _residueColor: string;
     private idSelector: string;
-    private prePro: boolean;
+    private _prePro: boolean;
     private authorResNum: number;
 
     constructor(aa: string, phi: number, psi: number, rama: string, chain: string, num: number, cisPeptide: string,
                 modelId: number, authorResNum: number) {
-        this.aa = aa;
+        this._aa = aa;
         this.phi = phi;
         this.psi = psi;
         this.rama = rama;
         this.chain = chain;
-        this.num = num;
+        this._num = num;
         this.cisPeptide = cisPeptide;
         this.modelId = modelId;
-        this.spProp = false;
+        this._residueColor = '';
         this.idSelector = '';
-        this.prePro = false;
+        this._prePro = false;
         this.authorResNum = authorResNum;
     }
 }
 
 export class ParsePDB {
+
     private pdbID: string;
     private _chainsArray: string[];
     private _modelArray: number[];
-    private _residueArray: object[];
+    private _residueArray: Res[];
     private _rsrz: {[id: number]: Dictionary; } = {};
     private _outlDict: {[id: number]: Dictionary; } = {};
+    private _moleculs;
 
     constructor(pdb: string) {
         this.pdbID = pdb.toLowerCase();
+        this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
         this._residueArray = [];
+    }
+
+    get moleculs() {
+        return this._moleculs;
     }
 
     public downloadAndParse() {
@@ -81,6 +115,23 @@ export class ParsePDB {
                     }
                 }
             }
+            this.residueArray.sort((a: any, b: any) => {
+                if (a.num < b.num)
+                    return -1;
+                if (a.num > b.num)
+                    return 1;
+                return 0;
+            });
+            this.residueArray.forEach((value: Res, index: number) => {
+                if (index + 1 != this.residueArray.length) {
+                    if (this.residueArray[index+1].num - value.num == 1)
+                    {
+                        if (this.residueArray[index + 1].aa == 'PRO'){
+                            value.prePro = true;
+                        }
+                    }
+                }
+            });
             xmlHttp.open('GET',
                 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID,
                 false);
@@ -111,7 +162,7 @@ export class ParsePDB {
         return this._modelArray;
     }
 
-    get residueArray(): object[] {
+    get residueArray(): Res[] {
         return this._residueArray;
     }
     get rsrz(): { [p: number]: Dictionary } {
