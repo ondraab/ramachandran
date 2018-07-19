@@ -573,7 +573,7 @@ class RamachandranComponent extends PolymerElement {
             .merge(this.svgContainer)
             // .style('fill', 'transparent')
             .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz, true))
-            .style('stroke', 'rgb(144, 142, 123)')
+            // .style('stroke', 'rgb(144, 142, 123)')
             .style('opacity', (d) => {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz))
             })
@@ -581,7 +581,7 @@ class RamachandranComponent extends PolymerElement {
                 if (d3.select(this).node().style.opacity == 0)
                     return;
 
-                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
+                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
 
             })
             .on('mouseout', function(d: any) {
@@ -1163,13 +1163,12 @@ class RamachandranComponent extends PolymerElement {
      * @param rsrz
      */
     public onMouseOverResidue(d: any, pdbId: string, ramaContourPlotType: number, residueColorStyle: number,
-                              tooltip: any, outliersType: any, rsrz: any){
-        let highlightColor = function () {
-            if (d.residueColor == '#000'){
-                return 'yellow'
-            }
-            return d.residueColor;
-        };
+                              tooltip: any, outliersType: any, rsrz: any, fillColorFunction: any){
+        let highlightColor = d.residueColor;
+        if (fillColorFunction(d, residueColorStyle, outliersType, rsrz) == '#000'){
+            highlightColor = 'yellow';
+        }
+
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
         RamachandranComponent.changeContours(d, false, ramaContourPlotType);
         switch (residueColorStyle) {
@@ -1186,7 +1185,6 @@ class RamachandranComponent extends PolymerElement {
                 break;
             case 2:
                 let tempStr = '';
-
                 if (typeof outliersType[d.num] === 'undefined') {
                     tooltip.html(RamachandranComponent.tooltipText(d));
                     break;
@@ -1307,7 +1305,7 @@ class RamachandranComponent extends PolymerElement {
                 node.on('mouseover', function () {
                     if (d3.select(`#${d.idSelector}`).style('opacity')== '0')
                         return;
-                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz)
+                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction)
 
                 });
 
