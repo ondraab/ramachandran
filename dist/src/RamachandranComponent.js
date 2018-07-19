@@ -224,12 +224,12 @@ var RamachandranComponent = function (_polymer_element_js_) {
          * change residues in chart
          * @param {any[]} chainsToShow
          * @param {number} ramaContourPlotType
-         * @param {number[]} entityToShow
+         * @param {number[]} modelsToShow
          */
 
     }, {
         key: "updateChart",
-        value: function updateChart(chainsToShow, ramaContourPlotType, entityToShow) {
+        value: function updateChart(chainsToShow, ramaContourPlotType, modelsToShow) {
             this.svgContainer.selectAll('g.dataGroup').remove();
             //reset counters
             this.sidechainOutliers = 0;
@@ -305,7 +305,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             d3.selectAll('.outliers').remove();
             d3.selectAll('table').remove();
             this.svgContainer.selectAll('.shapes').data(jsonObject.filter(function (d, i) {
-                if (chainsToShow.indexOf(d.chain) != -1 && (entityToShow.indexOf(d.modelId) != -1 || entityToShow.indexOf(d.modelId.toString()))) {
+                if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 || modelsToShow.indexOf(d.modelId.toString()) != -1)) {
                     if (d.phi != null || d.psi != null) {
                         var actualRes = switchPlotType(d, i);
                         if (typeof actualRes != 'undefined') {
@@ -345,7 +345,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             // .style('fill', 'transparent')
             .style('fill', function (d) {
                 return fillColorFunction(d, residueColorStyle, outliersType, rsrz, true);
-            }).style('opacity', function (d) {
+            }).style('stroke', 'rgb(144, 142, 123)').style('opacity', function (d) {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
             }).on('mouseover', function (d) {
                 if (d3.select(this).node().style.opacity == 0) return;
@@ -1050,12 +1050,9 @@ var RamachandranComponent = function (_polymer_element_js_) {
     }, {
         key: "computeOpacity",
         value: function computeOpacity(fillTmp) {
-            if (fillTmp === '#008000' || fillTmp === 'black') {
-                return 0.15;
-            }
-            if (fillTmp === '#ff0') {
-                return 0.8;
-            }
+            if (fillTmp == '#008000') return 0.5;
+            if (fillTmp == 'black') return 0.15;
+            if (fillTmp == '#ff0') return 0.8;
             return 1;
         }
         /**

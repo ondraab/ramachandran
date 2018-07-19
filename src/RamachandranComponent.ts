@@ -398,9 +398,9 @@ class RamachandranComponent extends PolymerElement {
      * change residues in chart
      * @param {any[]} chainsToShow
      * @param {number} ramaContourPlotType
-     * @param {number[]} entityToShow
+     * @param {number[]} modelsToShow
      */
-    public updateChart(chainsToShow: any[], ramaContourPlotType: number, entityToShow: number[]) {
+    public updateChart(chainsToShow: any[], ramaContourPlotType: number, modelsToShow: number[]) {
         this.svgContainer.selectAll('g.dataGroup').remove();
 
         //reset counters
@@ -486,8 +486,8 @@ class RamachandranComponent extends PolymerElement {
 
         this.svgContainer.selectAll('.shapes')
             .data(jsonObject.filter((d: any, i: number) => {
-                if (chainsToShow.indexOf(d.chain) != -1 && (entityToShow.indexOf(d.modelId) != -1 ||
-                    entityToShow.indexOf(d.modelId.toString()))) {
+                if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 ||
+                    modelsToShow.indexOf(d.modelId.toString()) != -1)) {
                     if (d.phi != null || d.psi != null) {
                         const actualRes = switchPlotType(d, i);
                         if (typeof actualRes != 'undefined') {
@@ -534,6 +534,7 @@ class RamachandranComponent extends PolymerElement {
             .merge(this.svgContainer)
             // .style('fill', 'transparent')
             .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz, true))
+            .style('stroke', 'rgb(144, 142, 123)')
             .style('opacity', (d) => {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz))
             })
@@ -956,12 +957,12 @@ class RamachandranComponent extends PolymerElement {
      * @returns {number}
      */
     public static computeOpacity(fillTmp: any) {
-            if (fillTmp === '#008000' || fillTmp === 'black') {
+            if (fillTmp == '#008000')
+                return 0.5;
+            if (fillTmp == 'black')
                 return 0.15;
-            }
-            if (fillTmp === '#ff0') {
+            if (fillTmp == '#ff0')
                 return 0.8;
-            }
             return 1;
     }
 

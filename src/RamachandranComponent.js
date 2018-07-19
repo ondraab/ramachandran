@@ -282,9 +282,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * change residues in chart
      * @param {any[]} chainsToShow
      * @param {number} ramaContourPlotType
-     * @param {number[]} entityToShow
+     * @param {number[]} modelsToShow
      */
-    updateChart(chainsToShow, ramaContourPlotType, entityToShow) {
+    updateChart(chainsToShow, ramaContourPlotType, modelsToShow) {
         this.svgContainer.selectAll('g.dataGroup').remove();
         //reset counters
         this.sidechainOutliers = 0;
@@ -358,8 +358,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         d3.selectAll('table').remove();
         this.svgContainer.selectAll('.shapes')
             .data(jsonObject.filter((d, i) => {
-            if (chainsToShow.indexOf(d.chain) != -1 && (entityToShow.indexOf(d.modelId) != -1 ||
-                entityToShow.indexOf(d.modelId.toString()))) {
+            if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 ||
+                modelsToShow.indexOf(d.modelId.toString()) != -1)) {
                 if (d.phi != null || d.psi != null) {
                     const actualRes = switchPlotType(d, i);
                     if (typeof actualRes != 'undefined') {
@@ -404,6 +404,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .merge(this.svgContainer)
             // .style('fill', 'transparent')
             .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz, true))
+            .style('stroke', 'rgb(144, 142, 123)')
             .style('opacity', (d) => {
             return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
         })
@@ -782,12 +783,12 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @returns {number}
      */
     static computeOpacity(fillTmp) {
-        if (fillTmp === '#008000' || fillTmp === 'black') {
+        if (fillTmp == '#008000')
+            return 0.5;
+        if (fillTmp == 'black')
             return 0.15;
-        }
-        if (fillTmp === '#ff0') {
+        if (fillTmp == '#ff0')
             return 0.8;
-        }
         return 1;
     }
     /**

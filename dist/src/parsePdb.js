@@ -81,7 +81,7 @@ var ParsePDB = function () {
                                             for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                                                 var resid = _step5.value;
 
-                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mol.entity_id, resid.author_residue_number));
+                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id, resid.author_residue_number));
                                             }
                                         } catch (err) {
                                             _didIteratorError5 = true;

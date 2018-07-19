@@ -74,7 +74,7 @@ export class ParsePDB {
                                 chain.chain_id,
                                 resid.residue_number,
                                 resid.cis_peptide,
-                                mol.entity_id,
+                                mod.model_id,
                                 resid.author_residue_number
                             ));
                         }
