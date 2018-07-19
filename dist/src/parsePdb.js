@@ -6,22 +6,60 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 Object.defineProperty(exports, "__esModule", { value: true });
 
-var Res = function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId, authorResNum) {
-    _classCallCheck(this, Res);
+var Res = function () {
+    _createClass(Res, [{
+        key: "residueColor",
+        get: function get() {
+            return this._residueColor;
+        },
+        set: function set(value) {
+            this._residueColor = value;
+        }
+    }, {
+        key: "prePro",
+        get: function get() {
+            return this._prePro;
+        },
+        set: function set(value) {
+            this._prePro = value;
+        }
+    }, {
+        key: "num",
+        get: function get() {
+            return this._num;
+        },
+        set: function set(value) {
+            this._num = value;
+        }
+    }, {
+        key: "aa",
+        get: function get() {
+            return this._aa;
+        },
+        set: function set(value) {
+            this._aa = value;
+        }
+    }]);
 
-    this.aa = aa;
-    this.phi = phi;
-    this.psi = psi;
-    this.rama = rama;
-    this.chain = chain;
-    this.num = num;
-    this.cisPeptide = cisPeptide;
-    this.modelId = modelId;
-    this.spProp = false;
-    this.idSelector = '';
-    this.prePro = false;
-    this.authorResNum = authorResNum;
-};
+    function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId, authorResNum) {
+        _classCallCheck(this, Res);
+
+        this._aa = aa;
+        this.phi = phi;
+        this.psi = psi;
+        this.rama = rama;
+        this.chain = chain;
+        this._num = num;
+        this.cisPeptide = cisPeptide;
+        this.modelId = modelId;
+        this._residueColor = '';
+        this.idSelector = '';
+        this._prePro = false;
+        this.authorResNum = authorResNum;
+    }
+
+    return Res;
+}();
 
 var ParsePDB = function () {
     function ParsePDB(pdb) {
@@ -30,6 +68,7 @@ var ParsePDB = function () {
         this._rsrz = {};
         this._outlDict = {};
         this.pdbID = pdb.toLowerCase();
+        this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
         this._residueArray = [];
@@ -38,6 +77,8 @@ var ParsePDB = function () {
     _createClass(ParsePDB, [{
         key: "downloadAndParse",
         value: function downloadAndParse() {
+            var _this = this;
+
             var xmlHttp = new XMLHttpRequest();
             xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this.pdbID, false);
             xmlHttp.send();
@@ -81,7 +122,7 @@ var ParsePDB = function () {
                                             for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                                                 var resid = _step5.value;
 
-                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mol.entity_id, resid.author_residue_number));
+                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id, resid.author_residue_number));
                                             }
                                         } catch (err) {
                                             _didIteratorError5 = true;
@@ -143,6 +184,20 @@ var ParsePDB = function () {
                     }
                 }
 
+                this.residueArray.sort(function (a, b) {
+                    if (a.num < b.num) return -1;
+                    if (a.num > b.num) return 1;
+                    return 0;
+                });
+                this.residueArray.forEach(function (value, index) {
+                    if (index + 1 != _this.residueArray.length) {
+                        if (_this.residueArray[index + 1].num - value.num == 1) {
+                            if (_this.residueArray[index + 1].aa == 'PRO') {
+                                value.prePro = true;
+                            }
+                        }
+                    }
+                });
                 xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID, false);
                 xmlHttp.send();
                 var mols = JSON.parse(xmlHttp.responseText)[this.pdbID];
@@ -241,6 +296,11 @@ var ParsePDB = function () {
                     }
                 }
             }
+        }
+    }, {
+        key: "moleculs",
+        get: function get() {
+            return this._moleculs;
         }
     }, {
         key: "chainsArray",

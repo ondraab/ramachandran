@@ -40,6 +40,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.fillColorFunction = this.fillColorFunction.bind(this);
             var pdb = new parsePdb_1.default(this.pdbId);
             pdb.downloadAndParse();
+            RamachandranComponent.molecules = pdb.moleculs;
             RamachandranComponent.jsonObject = pdb.residueArray;
             this.outliersType = pdb.outlDict;
             this.rsrz = pdb.rsrz;
@@ -224,12 +225,12 @@ var RamachandranComponent = function (_polymer_element_js_) {
          * change residues in chart
          * @param {any[]} chainsToShow
          * @param {number} ramaContourPlotType
-         * @param {number[]} entityToShow
+         * @param {number[]} modelsToShow
          */
 
     }, {
         key: "updateChart",
-        value: function updateChart(chainsToShow, ramaContourPlotType, entityToShow) {
+        value: function updateChart(chainsToShow, ramaContourPlotType, modelsToShow) {
             this.svgContainer.selectAll('g.dataGroup').remove();
             //reset counters
             this.sidechainOutliers = 0;
@@ -264,11 +265,6 @@ var RamachandranComponent = function (_polymer_element_js_) {
              * @returns {any}
              */
             function switchPlotType(d, i) {
-                var prePro = false;
-                if (i + 1 != jsonObject.length && jsonObject[i + 1].aa == 'PRO') {
-                    d.prePro = true;
-                    prePro = true;
-                }
                 switch (ramaContourPlotType) {
                     case 1:
                         return d;
@@ -278,7 +274,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                         }
                         break;
                     case 3:
-                        if (prePro) return d;
+                        if (d.prePro) return d;
                         break;
                     case 4:
                         if (d.aa == 'GLY') {
@@ -299,13 +295,53 @@ var RamachandranComponent = function (_polymer_element_js_) {
                         return d;
                 }
             }
+            // let residues = [];
+            // filteredMolecules().forEach((molecule: any) => {
+            //     molecule.chains.forEach((chain: any) => {
+            //         chain.models.forEach((model: any) => {
+            //             model.residues.forEach((residue: any) => {
+            //                 switch (ramaContourPlotType) {
+            //                     case 1:
+            //                         residues.push(residue);
+            //                         break;
+            //                     case 2:
+            //                         if (residue.aa == 'ILE' || residue.aa == 'VAL') {
+            //                             residues.push(residue);
+            //                         }
+            //                         break;
+            //                     case 3:
+            //                         if (residue.prePro)
+            //                             residues.push(residue);
+            //                         break;
+            //                     case 4:
+            //                         if (residue.aa == 'GLY') {
+            //                             residues.push(residue);
+            //                         }
+            //                         break;
+            //                     case 5:
+            //                         if (residue.cisPeptide == null && residue.aa == 'PRO') {
+            //                             residues.push(residue);
+            //                         }
+            //                         break;
+            //                     case 6:
+            //                         if (residue.cisPeptide == 'Y' && residue.aa == 'PRO') {
+            //                             residues.push(residue);
+            //                         }
+            //                         break;
+            //                     default:
+            //                         residues.push(residue);
+            //                 }
+            //             })
+            //         })
+            //     })
+            // });
             // sort because of svg z-index
             this.sortJson(jsonObject, residueColorStyle, outliersType, rsrz);
             // outliersText
             d3.selectAll('.outliers').remove();
             d3.selectAll('table').remove();
             this.svgContainer.selectAll('.shapes').data(jsonObject.filter(function (d, i) {
-                if (chainsToShow.indexOf(d.chain) != -1 && (entityToShow.indexOf(d.modelId) != -1 || entityToShow.indexOf(d.modelId.toString()))) {
+                if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 || modelsToShow.indexOf(d.modelId.toString()) != -1)) {
                     if (d.phi != null || d.psi != null) {
                         var actualRes = switchPlotType(d, i);
                         if (typeof actualRes != 'undefined') {
@@ -345,7 +381,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             // .style('fill', 'transparent')
             .style('fill', function (d) {
                 return fillColorFunction(d, residueColorStyle, outliersType, rsrz, true);
-            }).style('opacity', function (d) {
+            }).style('stroke', 'rgb(144, 142, 123)').style('opacity', function (d) {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
             }).on('mouseover', function (d) {
                 if (d3.select(this).node().style.opacity == 0) return;
@@ -623,29 +659,38 @@ var RamachandranComponent = function (_polymer_element_js_) {
             switch (drawingType) {
                 case 1:
                     if (d.rama === 'OUTLIER') {
-                        return '#f00';
+                        d.residueColor = '#f00';
+                        return d.residueColor;
                     }
-                    return 'black';
+                    d.residueColor = '#000';
+                    return d.residueColor;
                 case 2:
                     if (typeof outliersType[d.num] === 'undefined') {
-                        return '#008000';
+                        d.residueColor = '#008000';
+                        return d.residueColor;
                     } else {
                         switch (outliersType[d.num].outliersType.length) {
                             case 0:
-                                return '#008000';
+                                d.residueColor = '#008000';
+                                return d.residueColor;
                             case 1:
-                                return '#ff0';
+                                d.residueColor = '#ff0';
+                                return d.residueColor;
                             case 2:
-                                return '#f80';
+                                d.residueColor = '#f80';
+                                return d.residueColor;
                             default:
-                                return '#850013';
+                                d.residueColor = '#850013';
+                                return d.residueColor;
                         }
                     }
                 case 3:
                     if (typeof rsrz[d.num] === 'undefined') {
-                        return 'black';
+                        d.residueColor = '#000';
+                        return d.residueColor;
                     } else {
-                        return '#f00';
+                        d.residueColor = '#f00';
+                        return d.residueColor;
                     }
                 default:
                     break;
@@ -671,7 +716,12 @@ var RamachandranComponent = function (_polymer_element_js_) {
          * @param rsrz
          */
         value: function onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
-            var highlightColor = 'yellow';
+            var highlightColor = function highlightColor() {
+                if (d.residueColor == '#000') {
+                    return 'yellow';
+                }
+                return d.residueColor;
+            };
             RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
             RamachandranComponent.changeContours(d, false, ramaContourPlotType);
             switch (residueColorStyle) {
@@ -688,22 +738,6 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     break;
                 case 2:
                     var tempStr = '';
-                    highlightColor = function highlightColor() {
-                        if (typeof outliersType[d.num] === 'undefined') {
-                            return '#008000';
-                        } else {
-                            switch (outliersType[d.num].outliersType.length) {
-                                case 0:
-                                    return '#008000';
-                                case 1:
-                                    return '#ff0';
-                                case 2:
-                                    return '#f80';
-                                default:
-                                    return '#850013';
-                            }
-                        }
-                    };
                     if (typeof outliersType[d.num] === 'undefined') {
                         tooltip.html(RamachandranComponent.tooltipText(d));
                         break;
@@ -774,10 +808,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
             }
             d3.select("#" + d.idSelector).transition().attr('d', function (dat) {
                 return RamachandranComponent.changeObjectSize(dat);
-            }).style('fill', function (d) {
-                return fillColorFunction(d, residueColorStyle, outliersType, rsrz);
-            }).style('opacity', function (d) {
-                return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
+            }).style('fill', d.residueColor).style('opacity', function () {
+                return RamachandranComponent.computeOpacity(d.residueColor);
             });
             tooltip.transition().style('opacity', 0);
             if (outTime - RamachandranComponent.currentTime > 600) {
@@ -1050,12 +1082,9 @@ var RamachandranComponent = function (_polymer_element_js_) {
     }, {
         key: "computeOpacity",
         value: function computeOpacity(fillTmp) {
-            if (fillTmp === '#008000' || fillTmp === 'black') {
-                return 0.15;
-            }
-            if (fillTmp === '#ff0') {
-                return 0.8;
-            }
+            if (fillTmp == '#008000') return 0.5;
+            if (fillTmp == 'black' || fillTmp == '#000') return 0.15;
+            if (fillTmp == '#ff0') return 0.8;
             return 1;
         }
         /**

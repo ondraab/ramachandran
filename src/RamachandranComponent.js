@@ -42,6 +42,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.fillColorFunction = this.fillColorFunction.bind(this);
         const pdb = new parsePdb_1.default(this.pdbId);
         pdb.downloadAndParse();
+        RamachandranComponent.molecules = pdb.moleculs;
         RamachandranComponent.jsonObject = pdb.residueArray;
         this.outliersType = pdb.outlDict;
         this.rsrz = pdb.rsrz;
@@ -282,9 +283,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * change residues in chart
      * @param {any[]} chainsToShow
      * @param {number} ramaContourPlotType
-     * @param {number[]} entityToShow
+     * @param {number[]} modelsToShow
      */
-    updateChart(chainsToShow, ramaContourPlotType, entityToShow) {
+    updateChart(chainsToShow, ramaContourPlotType, modelsToShow) {
         this.svgContainer.selectAll('g.dataGroup').remove();
         //reset counters
         this.sidechainOutliers = 0;
@@ -315,11 +316,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
          * @returns {any}
          */
         function switchPlotType(d, i) {
-            let prePro = false;
-            if (i + 1 != jsonObject.length && jsonObject[i + 1].aa == 'PRO') {
-                d.prePro = true;
-                prePro = true;
-            }
             switch (ramaContourPlotType) {
                 case 1:
                     return d;
@@ -329,7 +325,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                     }
                     break;
                 case 3:
-                    if (prePro)
+                    if (d.prePro)
                         return d;
                     break;
                 case 4:
@@ -351,6 +347,46 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                     return d;
             }
         }
+        // let residues = [];
+        // filteredMolecules().forEach((molecule: any) => {
+        //     molecule.chains.forEach((chain: any) => {
+        //         chain.models.forEach((model: any) => {
+        //             model.residues.forEach((residue: any) => {
+        //                 switch (ramaContourPlotType) {
+        //                     case 1:
+        //                         residues.push(residue);
+        //                         break;
+        //                     case 2:
+        //                         if (residue.aa == 'ILE' || residue.aa == 'VAL') {
+        //                             residues.push(residue);
+        //                         }
+        //                         break;
+        //                     case 3:
+        //                         if (residue.prePro)
+        //                             residues.push(residue);
+        //                         break;
+        //                     case 4:
+        //                         if (residue.aa == 'GLY') {
+        //                             residues.push(residue);
+        //                         }
+        //                         break;
+        //                     case 5:
+        //                         if (residue.cisPeptide == null && residue.aa == 'PRO') {
+        //                             residues.push(residue);
+        //                         }
+        //                         break;
+        //                     case 6:
+        //                         if (residue.cisPeptide == 'Y' && residue.aa == 'PRO') {
+        //                             residues.push(residue);
+        //                         }
+        //                         break;
+        //                     default:
+        //                         residues.push(residue);
+        //                 }
+        //             })
+        //         })
+        //     })
+        // });
         // sort because of svg z-index
         this.sortJson(jsonObject, residueColorStyle, outliersType, rsrz);
         // outliersText
@@ -358,8 +394,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         d3.selectAll('table').remove();
         this.svgContainer.selectAll('.shapes')
             .data(jsonObject.filter((d, i) => {
-            if (chainsToShow.indexOf(d.chain) != -1 && (entityToShow.indexOf(d.modelId) != -1 ||
-                entityToShow.indexOf(d.modelId.toString()))) {
+            if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 ||
+                modelsToShow.indexOf(d.modelId.toString()) != -1)) {
                 if (d.phi != null || d.psi != null) {
                     const actualRes = switchPlotType(d, i);
                     if (typeof actualRes != 'undefined') {
@@ -404,6 +440,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .merge(this.svgContainer)
             // .style('fill', 'transparent')
             .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz, true))
+            .style('stroke', 'rgb(144, 142, 123)')
             .style('opacity', (d) => {
             return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
         })
@@ -746,31 +783,40 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         switch (drawingType) {
             case 1:
                 if (d.rama === 'OUTLIER') {
-                    return '#f00';
+                    d.residueColor = '#f00';
+                    return d.residueColor;
                 }
-                return 'black';
+                d.residueColor = '#000';
+                return d.residueColor;
             case 2:
                 if (typeof outliersType[d.num] === 'undefined') {
-                    return '#008000';
+                    d.residueColor = '#008000';
+                    return d.residueColor;
                 }
                 else {
                     switch (outliersType[d.num].outliersType.length) {
                         case 0:
-                            return '#008000';
+                            d.residueColor = '#008000';
+                            return d.residueColor;
                         case 1:
-                            return '#ff0';
+                            d.residueColor = '#ff0';
+                            return d.residueColor;
                         case 2:
-                            return '#f80';
+                            d.residueColor = '#f80';
+                            return d.residueColor;
                         default:
-                            return '#850013';
+                            d.residueColor = '#850013';
+                            return d.residueColor;
                     }
                 }
             case 3:
                 if (typeof rsrz[d.num] === 'undefined') {
-                    return 'black';
+                    d.residueColor = '#000';
+                    return d.residueColor;
                 }
                 else {
-                    return '#f00';
+                    d.residueColor = '#f00';
+                    return d.residueColor;
                 }
             default:
                 break;
@@ -782,12 +828,12 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @returns {number}
      */
     static computeOpacity(fillTmp) {
-        if (fillTmp === '#008000' || fillTmp === 'black') {
+        if (fillTmp == '#008000')
+            return 0.5;
+        if (fillTmp == 'black' || fillTmp == '#000')
             return 0.15;
-        }
-        if (fillTmp === '#ff0') {
+        if (fillTmp == '#ff0')
             return 0.8;
-        }
         return 1;
     }
     /**
@@ -932,7 +978,12 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @param rsrz
      */
     onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
-        let highlightColor = 'yellow';
+        let highlightColor = function () {
+            if (d.residueColor == '#000') {
+                return 'yellow';
+            }
+            return d.residueColor;
+        };
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
         RamachandranComponent.changeContours(d, false, ramaContourPlotType);
         switch (residueColorStyle) {
@@ -949,23 +1000,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 break;
             case 2:
                 let tempStr = '';
-                highlightColor = function () {
-                    if (typeof outliersType[d.num] === 'undefined') {
-                        return '#008000';
-                    }
-                    else {
-                        switch (outliersType[d.num].outliersType.length) {
-                            case 0:
-                                return '#008000';
-                            case 1:
-                                return '#ff0';
-                            case 2:
-                                return '#f80';
-                            default:
-                                return '#850013';
-                        }
-                    }
-                };
                 if (typeof outliersType[d.num] === 'undefined') {
                     tooltip.html(RamachandranComponent.tooltipText(d));
                     break;
@@ -1042,9 +1076,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         d3.select(`#${d.idSelector}`)
             .transition()
             .attr('d', (dat) => RamachandranComponent.changeObjectSize(dat))
-            .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz))
-            .style('opacity', (d) => {
-            return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
+            .style('fill', d.residueColor)
+            .style('opacity', () => {
+            return RamachandranComponent.computeOpacity(d.residueColor);
         });
         tooltip.transition()
             .style('opacity', 0);
