@@ -457,7 +457,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                                 model.residues.forEach((residue) => {
                                     residue.modelId = model.modelId;
                                     residue.chainId = chain.chainId;
-                                    if (switchPlotType(residue)) {
+                                    if (switchPlotType(residue) && residue.rama != null) {
                                         RamachandranComponent.residuesOnCanvas.push(residue);
                                         residues.push(residue);
                                     }
@@ -533,13 +533,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .on('mouseover', function (d) {
             if (d3.select(this).node().style.opacity == 0)
                 return;
-            onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+            onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
         })
             .on('mouseout', function (d) {
             if (d3.select(this).node().style.opacity == 0)
                 return;
             window.clearTimeout(RamachandranComponent.timeoutId);
-            onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+            onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
         });
         // .on('click', function(d: any) {
         //     if (highlightedResidues.length != 0) {
@@ -1066,11 +1066,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @param outliersType
      * @param rsrz
      */
-    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction) {
+    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
         let highlightColor = d.residueColor;
-        if (fillColorFunction(d, residueColorStyle, outliersType, rsrz) == '#000') {
+        if (d.residueColor == '#000')
             highlightColor = 'yellow';
-        }
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
         RamachandranComponent.changeContours(d, false, ramaContourPlotType);
         switch (residueColorStyle) {
@@ -1152,9 +1151,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @param tooltip
      * @param outliersType
      * @param rsrz
-     * @param fillColorFunction
      */
-    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction) {
+    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
         let outTime = new Date().getTime();
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOut', d, pdbId);
         if (RamachandranComponent.highlightedResidues.indexOf(d) > -1) {
@@ -1195,13 +1193,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 node.on('mouseover', function () {
                     if (d3.select(`#${d.idSelector}`).style('opacity') == '0')
                         return;
-                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
                 });
                 node.on('mouseout', function () {
                     if (d3.select(`#${d.idSelector}`).style('opacity') == '0')
                         return;
                     window.clearTimeout(RamachandranComponent.timeoutId);
-                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
                 });
             }
         });

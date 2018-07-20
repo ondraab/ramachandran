@@ -424,7 +424,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                                     model.residues.forEach(function (residue) {
                                         residue.modelId = model.modelId;
                                         residue.chainId = chain.chainId;
-                                        if (switchPlotType(residue)) {
+                                        if (switchPlotType(residue) && residue.rama != null) {
                                             RamachandranComponent.residuesOnCanvas.push(residue);
                                             residues.push(residue);
                                         }
@@ -488,11 +488,11 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz));
             }).on('mouseover', function (d) {
                 if (d3.select(this).node().style.opacity == 0) return;
-                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
             }).on('mouseout', function (d) {
                 if (d3.select(this).node().style.opacity == 0) return;
                 window.clearTimeout(RamachandranComponent.timeoutId);
-                onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
             });
             // .on('click', function(d: any) {
             //     if (highlightedResidues.length != 0) {
@@ -820,11 +820,9 @@ var RamachandranComponent = function (_polymer_element_js_) {
          * @param outliersType
          * @param rsrz
          */
-        value: function onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction) {
+        value: function onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
             var highlightColor = d.residueColor;
-            if (fillColorFunction(d, residueColorStyle, outliersType, rsrz) == '#000') {
-                highlightColor = 'yellow';
-            }
+            if (d.residueColor == '#000') highlightColor = 'yellow';
             RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
             RamachandranComponent.changeContours(d, false, ramaContourPlotType);
             switch (residueColorStyle) {
@@ -898,12 +896,11 @@ var RamachandranComponent = function (_polymer_element_js_) {
          * @param tooltip
          * @param outliersType
          * @param rsrz
-         * @param fillColorFunction
          */
 
     }, {
         key: "onMouseOutResidue",
-        value: function onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction) {
+        value: function onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
             var outTime = new Date().getTime();
             RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOut', d, pdbId);
             if (RamachandranComponent.highlightedResidues.indexOf(d) > -1) {
@@ -953,12 +950,12 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     });
                     node.on('mouseover', function () {
                         if (d3.select("#" + d.idSelector).style('opacity') == '0') return;
-                        onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                        onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
                     });
                     node.on('mouseout', function () {
                         if (d3.select("#" + d.idSelector).style('opacity') == '0') return;
                         window.clearTimeout(RamachandranComponent.timeoutId);
-                        onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                        onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
                     });
                 }
             });

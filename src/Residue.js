@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Residue {
+    get residueColor() {
+        return this._residueColor;
+    }
+    set residueColor(value) {
+        this._residueColor = value;
+    }
     get modelId() {
         return this._modelId;
     }
