@@ -1,63 +1,10 @@
+import {Residue} from './Residue';
+import {Model} from "./Model";
+import {Chain} from "./Chain";
+import {Molecule} from "./Molecule";
+
 interface Dictionary {
     outliersType: string[];
-}
-
-class Res {
-    get residueColor(): string {
-        return this._residueColor;
-    }
-
-    set residueColor(value: string) {
-        this._residueColor = value;
-    }
-    get prePro(): boolean {
-        return this._prePro;
-    }
-    get num(): number {
-        return this._num;
-    }
-
-    set num(value: number) {
-        this._num = value;
-    }
-    get aa(): string {
-        return this._aa;
-    }
-
-    set aa(value: string) {
-        this._aa = value;
-    }
-    set prePro(value: boolean) {
-        this._prePro = value;
-    }
-    private _aa: string;
-    private phi: number;
-    private psi: number;
-    private rama: string;
-    private chain: string;
-    private _num: number;
-    private cisPeptide: string;
-    private modelId: number;
-    private _residueColor: string;
-    private idSelector: string;
-    private _prePro: boolean;
-    private authorResNum: number;
-
-    constructor(aa: string, phi: number, psi: number, rama: string, chain: string, num: number, cisPeptide: string,
-                modelId: number, authorResNum: number) {
-        this._aa = aa;
-        this.phi = phi;
-        this.psi = psi;
-        this.rama = rama;
-        this.chain = chain;
-        this._num = num;
-        this.cisPeptide = cisPeptide;
-        this.modelId = modelId;
-        this._residueColor = '';
-        this.idSelector = '';
-        this._prePro = false;
-        this.authorResNum = authorResNum;
-    }
 }
 
 export class ParsePDB {
@@ -65,7 +12,6 @@ export class ParsePDB {
     private pdbID: string;
     private _chainsArray: string[];
     private _modelArray: number[];
-    private _residueArray: Res[];
     private _rsrz: {[id: number]: Dictionary; } = {};
     private _outlDict: {[id: number]: Dictionary; } = {};
     private _moleculs;
@@ -75,7 +21,6 @@ export class ParsePDB {
         this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
-        this._residueArray = [];
     }
 
     get moleculs() {
@@ -92,7 +37,9 @@ export class ParsePDB {
         } else {
             const molecules = JSON.parse(xmlHttp.responseText)[this.pdbID];
             for (const mol of molecules.molecules) {
+                let chains = [];
                 for (const chain of mol.chains) {
+                    let models = [];
                     for (const mod of chain.models) {
                         if (this.chainsArray.indexOf(chain.chain_id) === -1) {
                             this.chainsArray.push(chain.chain_id);
@@ -100,37 +47,49 @@ export class ParsePDB {
                         if (this.modelArray.indexOf(mod.model_id) === -1) {
                             this._modelArray.push(mod.model_id);
                         }
+                        let residues = [];
                         for (const resid of mod.residues) {
-                            this._residueArray.push(new Res(resid.residue_name,
-                                resid.phi,
-                                resid.psi,
-                                resid.rama,
-                                chain.chain_id,
-                                resid.residue_number,
-                                resid.cis_peptide,
-                                mod.model_id,
-                                resid.author_residue_number
-                            ));
+                            residues.push(new Residue(resid.residue_name, resid.phi,
+                                resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number));
                         }
+                        residues.sort((a: Residue, b: Residue) => {
+                            if (a.num < b.num)
+                                return -1;
+                            if (a.num > b.num)
+                                return 1;
+                            return 0;
+                        });
+                        residues.forEach((value: Residue, index: number) => {
+                            if (index + 1 != residues.length && residues[index + 1].aa == 'PRO') {
+                                value.prePro = true;
+                            }
+                        });
+                        models.push(new Model(mod.model_id, residues))
                     }
+                    models.sort((a: Model, b: Model) => {
+                       if (a.modelId < b.modelId)
+                           return -1;
+                       if (a.modelId > b.modelId)
+                           return 1;
+                       return 0;
+                    });
+                    chains.push(new Chain(chain.chain_id, models));
                 }
+                chains.sort((a: Chain, b: Chain) => {
+                    if (a.chainId < b.chainId)
+                        return -1;
+                    if (a.chainId > b.chainId)
+                        return 1;
+                    return 0;
+                });
+                this._moleculs.push(new Molecule(mol.entity_id, chains))
             }
-            this.residueArray.sort((a: any, b: any) => {
-                if (a.num < b.num)
+            this._moleculs.sort((a: Molecule, b: Molecule) => {
+                if (a.entityId < b.entityId)
                     return -1;
-                if (a.num > b.num)
+                if (a.entityId > b.entityId)
                     return 1;
                 return 0;
-            });
-            this.residueArray.forEach((value: Res, index: number) => {
-                if (index + 1 != this.residueArray.length) {
-                    if (this.residueArray[index+1].num - value.num == 1)
-                    {
-                        if (this.residueArray[index + 1].aa == 'PRO'){
-                            value.prePro = true;
-                        }
-                    }
-                }
             });
             xmlHttp.open('GET',
                 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID,
@@ -162,9 +121,6 @@ export class ParsePDB {
         return this._modelArray;
     }
 
-    get residueArray(): Res[] {
-        return this._residueArray;
-    }
     get rsrz(): { [p: number]: Dictionary } {
         return this._rsrz;
     }

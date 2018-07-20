@@ -22,7 +22,6 @@ class RamachandranComponent extends PolymerElement {
 
     //helpers
     private modelsToShowNumbers;
-    private static jsonObject;
     private static molecules;
     private xMap;
     private yMap;
@@ -97,9 +96,9 @@ class RamachandranComponent extends PolymerElement {
 
         const pdb = new ParsePDB(this.pdbId);
         pdb.downloadAndParse();
-        RamachandranComponent.molecules = pdb.moleculs;
 
-        RamachandranComponent.jsonObject = pdb.residueArray;
+        // RamachandranComponent.jsonObject = pdb.residueArray;
+        RamachandranComponent.molecules = pdb.moleculs;
         this.outliersType = pdb.outlDict;
         this.rsrz = pdb.rsrz;
 
@@ -158,7 +157,7 @@ class RamachandranComponent extends PolymerElement {
         const pdb = new ParsePDB(this.pdbId);
         pdb.downloadAndParse();
 
-        RamachandranComponent.jsonObject = pdb.residueArray;
+        RamachandranComponent.molecules = pdb.moleculs;
 
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShow);
 
@@ -373,6 +372,43 @@ class RamachandranComponent extends PolymerElement {
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         });
 
+        let chainsString = '';
+        if (this.chainsToShow.length > 2) {
+            for (const chain of this.chainsToShow) {
+                chainsString += chain.toString() + ', ';
+                if (this.chainsToShow.indexOf(chain) == this.chainsToShow.length -1)
+                    chainsString.slice(0,-2);
+                if (this.chainsToShow.indexOf(chain) == 2)
+                {
+                    chainsString += '...';
+                    break;
+                }
+            }
+        } else
+            chainsString = this.chainsToShow.toString();
+
+        let modelsString = '';
+        if (this.modelsToShow.length > 2) {
+            for (const model of this.modelsToShow) {
+                modelsString += model.toString() + ', ';
+                if (this.modelsToShow.indexOf(model) == this.modelsToShow.length -1)
+                    modelsString.slice(0,-2);
+                if (this.modelsToShow.indexOf(model) == 2)
+                {
+                    modelsString += '...';
+                    break;
+                }
+            }
+        } else
+            modelsString = this.modelsToShow.toString();
+
+
+        let tooltip = d3.select("body")
+            .append("div")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden");
+
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
             .style('width', '27%').style('margin', '5px 5px 5px 10px');
 
@@ -381,10 +417,35 @@ class RamachandranComponent extends PolymerElement {
 
         entryInfo.append('div').style('display', 'inline-block')
             .attr('id', 'rama-info-chains').style('width', '36%')
-            .style('text-align','right').text(this.chainsToShow);
+            .style('text-align','right').text(chainsString);
+        d3.select('#rama-info-chains').on("mouseover", () =>{
+            d3.select('#rama-info-chains').style('cursor', 'default');
+            return tooltip.style("visibility", "visible")
+                .style('opacity', .95)
+                .text(this.chainsToShow)
+                .style('left', (d3.event.pageX + 10) + 'px')
+                .style('top', (d3.event.pageY - 48) + 'px')
+                .style('background', 'gray')
+                .style('padding', '2px 5px 2px 5px')
+                .transition().duration(50);
+        })
+            .on("mouseout", () =>{return tooltip.style("visibility", "hidden");});
 
         entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models')
-            .style('width', '36%').style('text-align','right').text(this.modelsToShow);
+            .style('width', '36%').style('text-align','right').text(modelsString);
+
+        d3.select('#rama-info-models').on("mouseover", () =>{
+            d3.select('#rama-info-models').style('cursor', 'default');
+            return tooltip.style("visibility", "visible")
+                .text(this.modelsToShow.toString())
+                .style('opacity', .95)
+                .style('left', (d3.event.pageX + 10) + 'px')
+                .style('top', (d3.event.pageY - 48) + 'px')
+                .style('background', 'gray')
+                .style('padding', '2px 5px 2px 5px')
+                .transition().duration(50);
+        })
+            .on("mouseout", () =>{return tooltip.style("visibility", "hidden");});
 
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
         RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
@@ -418,7 +479,6 @@ class RamachandranComponent extends PolymerElement {
         // let width = 500;
         const { fillColorFunction, outliersType, rsrz, tooltip, residueColorStyle, width} = this;
 
-        const jsonObject = RamachandranComponent.jsonObject;
         let { onMouseOutResidue, onMouseOverResidue } = this;
 
 
@@ -440,7 +500,7 @@ class RamachandranComponent extends PolymerElement {
          * @param {number} i
          * @returns {any}
          */
-        function switchPlotType(d: any, i: number) {
+        function switchPlotType(d: any) {
             switch (ramaContourPlotType) {
                 case 1:
                     return d;
@@ -516,32 +576,59 @@ class RamachandranComponent extends PolymerElement {
         // });
 
         // sort because of svg z-index
-        this.sortJson(jsonObject, residueColorStyle, outliersType, rsrz);
-
         // outliersText
         d3.selectAll('.outliers').remove();
         d3.selectAll('table').remove();
 
 
+        function filterModels() {
+            let residues = [];
+            RamachandranComponent.molecules.forEach((molecule: any) => {
+                molecule.chains.forEach((chain: any) => {
+                    if (chainsToShow.indexOf(chain.chainId) != -1) {
+                        chain.models.forEach((model: any) => {
+                            if (modelsToShow.indexOf(model.modelId) != -1) {
+                                model.residues.forEach((residue: any) => {
+                                    residue.modelId = model.modelId;
+                                    residue.chainId = chain.chainId;
+                                    if (switchPlotType(residue)) {
+                                        RamachandranComponent.residuesOnCanvas.push(residue);
+                                        residues.push(residue);
+                                    }
+                                })
+                            }
+                        });
+                    }});
+            });
+            return residues
+        }
+
+        let filteredResidues = filterModels().sort((a: any, b: any) => {
+            if (typeof rsrz[a.num] != 'undefined') {
+                return 1;
+            }else if (typeof rsrz[b.num] != 'undefined') {
+                return -1;
+            } else if (typeof outliersType[a.num] == 'undefined') {
+                return -1;
+            } else if (typeof outliersType[b.num] == 'undefined') {
+                return 1;
+            } else if (outliersType[a.num].outliersType.length > outliersType[b.num].outliersType.length) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
+
+
         this.svgContainer.selectAll('.shapes')
-            .data(jsonObject.filter((d: any, i: number) => {
-                if (chainsToShow.indexOf(d.chain) != -1 && (modelsToShow.indexOf(d.modelId) != -1 ||
-                    modelsToShow.indexOf(d.modelId.toString()) != -1)) {
-                    if (d.phi != null || d.psi != null) {
-                        const actualRes = switchPlotType(d, i);
-                        if (typeof actualRes != 'undefined') {
-                            RamachandranComponent.residuesOnCanvas.push(actualRes);
-                            return actualRes;
-                        }
-                    }
-                }
-            }))
+            .data(filteredResidues)
             .enter()
             .append('g')
             .attr('class', 'dataGroup')
             .append('path')
             .attr('id', (d) => {
-                const id = d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num;
+                const id = d.aa + '-' + d.chainId + '-' + d.modelId + '-' + d.num;
 
                 d.idSelector = id;
                 if (residueColorStyle !== 3) {
@@ -875,23 +962,27 @@ class RamachandranComponent extends PolymerElement {
      * add summary infobelow the plot
      */
     public addSummaryInfo() {
+        let resArrayLength = RamachandranComponent.residuesOnCanvas.length;
+        if (RamachandranComponent.residuesOnCanvas.length == 0)
+            resArrayLength = 1;
+
         switch (this.residueColorStyle) {
             case 1:
                 d3.selectAll('#rama-sum-div').remove();
                 d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
                     .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
                     .text('Preferred regions: ' + String(RamachandranComponent.favored)
-                        + ' (' + String((RamachandranComponent.favored / RamachandranComponent.jsonObject.length * 100).toFixed(0))
+                        + ' (' + String((RamachandranComponent.favored / resArrayLength * 100).toFixed(0))
                         + '%)').enter();
                 d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
                     .attr('id', 'rama-sum-middle')
                     .text('Allowed regions: ' + String(RamachandranComponent.allowed)
-                        + ' (' + String((RamachandranComponent.allowed / RamachandranComponent.jsonObject.length * 100).toFixed(0))
+                        + ' (' + String((RamachandranComponent.allowed / resArrayLength * 100).toFixed(0))
                         + '%)').enter();
                 d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
                     .attr('id', 'rama-sum-thinnest')
                     .text('Outliers: ' + String(RamachandranComponent.outliersList.length)
-                        + ' (' + String((RamachandranComponent.outliersList.length / RamachandranComponent.jsonObject.length * 100).toFixed(0)) + '%)').enter();
+                        + ' (' + String((RamachandranComponent.outliersList.length / resArrayLength * 100).toFixed(0)) + '%)').enter();
 
                 break;
             case 2:
@@ -899,23 +990,23 @@ class RamachandranComponent extends PolymerElement {
                 d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
                     .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
                     .text('Ramachandran outliers: ' + String(this.ramachandranOutliers)
-                        + ' (' + String((this.ramachandranOutliers / RamachandranComponent.jsonObject.length * 100).toFixed(0)) +
+                        + ' (' + String((this.ramachandranOutliers / resArrayLength * 100).toFixed(0)) +
                         '%)').enter();
                 d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
                     .attr('id', 'rama-sum-middle')
                     .text('Sidechain outliers: ' + String(this.sidechainOutliers)
-                        + ' (' + String((this.sidechainOutliers / RamachandranComponent.jsonObject.length * 100).toFixed(0)) + '%)').enter();
+                        + ' (' + String((this.sidechainOutliers / resArrayLength * 100).toFixed(0)) + '%)').enter();
                 d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
                     .attr('id', 'rama-sum-thinnest')
                     .text('Clashes: ' + String(this.clashes)
-                        + ' (' + String((this.clashes / RamachandranComponent.jsonObject.length * 100).toFixed(0)) + '%)').enter();
+                        + ' (' + String((this.clashes / resArrayLength * 100).toFixed(0)) + '%)').enter();
                 break;
             case 3:
                 d3.selectAll('#rama-sum-div').remove();
                 d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
                     .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
                     .text('RSRZ: ' + String(this.rsrzCount)
-                        + ' (' + String((this.rsrzCount / RamachandranComponent.jsonObject.length * 100).toFixed(0)) + '%) ').enter();
+                        + ' (' + String((this.rsrzCount / resArrayLength * 100).toFixed(0)) + '%) ').enter();
                 break;
             default:
                 return;
@@ -1037,7 +1128,7 @@ class RamachandranComponent extends PolymerElement {
      */
     static dispatchCustomEvent(name: string, d: any, pdbId: string) {
         const event = new CustomEvent(name, {detail: {
-                chainId: d.chain,
+                chainId: d.chainId,
                 entityId: d.modelId,
                 entry: pdbId,
                 residueName: d.aa,
@@ -1120,7 +1211,7 @@ class RamachandranComponent extends PolymerElement {
      */
     static tooltipText(d: any) {
         // language=HTML
-        return  `<b>${d.chain} ${d.num} ${d.aa}</b><br/>\u03A6: ${d.phi}<br/>\u03A8: ${d.psi}`;
+        return  `<b>${d.chainId} ${d.num} ${d.aa}</b><br/>\u03A6: ${d.phi}<br/>\u03A8: ${d.psi}`;
     }
 
 
@@ -1289,7 +1380,7 @@ class RamachandranComponent extends PolymerElement {
 
         let {tooltip, outliersType, rsrz, onMouseOverResidue, pdbId, ramaContourPlotType,
             fillColorFunction, onMouseOutResidue} = this;
-        let resArray = RamachandranComponent.jsonObject.slice(0);
+        let resArray = RamachandranComponent.residuesOnCanvas;
         if (RamachandranComponent.selectedResidues.length != 0) {
             resArray = RamachandranComponent.selectedResidues.slice(0)
         }
@@ -1406,7 +1497,7 @@ class RamachandranComponent extends PolymerElement {
     static changeOpacity(aa: string, makeInvisible: boolean = true) {
         let residues = aa.split(',');
         let nodes;
-        let resArray = RamachandranComponent.jsonObject.slice(0);
+        let resArray = RamachandranComponent.residuesOnCanvas.slice(0);
         if (RamachandranComponent.selectedResidues.length != 0) {
             resArray = RamachandranComponent.selectedResidues.slice(0)
         }
@@ -1514,7 +1605,7 @@ class RamachandranComponent extends PolymerElement {
                 d3.select(this)
                     .style('background-color', '#b4bed6')
                     .style('cursor', 'pointer');
-                d3.select('#' + '-' + d.chain + '-' + d.modelId + '-' + d.num)
+                d3.select('#' + '-' + d.chainId + '-' + d.modelId + '-' + d.num)
                     .attr('d', (dat: any) => {
                         if (dat.aa === 'GLY') {
                             symbolTypes.triangle.size(175);
@@ -1530,7 +1621,7 @@ class RamachandranComponent extends PolymerElement {
                 d3.select(this)
                     .style('background-color', 'transparent')
                     .style('cursor', 'default');
-                d3.select('#' +  d.aa + '-' + d.chain + '-' + d.modelId + '-' + d.num)
+                d3.select('#' +  d.aa + '-' + d.chainId + '-' + d.modelId + '-' + d.num)
                     .transition()
                     // .duration(50)
                     .attr('d', (dat: any) => {
@@ -1545,7 +1636,7 @@ class RamachandranComponent extends PolymerElement {
                     .style('fillColorFunction-width', '0.5');
             })
             .selectAll('td')
-            .data((d) => [d.chain, d.num, d.aa, d.phi, d.psi])
+            .data((d) => [d.chainId, d.num, d.aa, d.phi, d.psi])
             .enter()
             .append('td')
             .attr('id', 'rama-td')
@@ -1557,7 +1648,7 @@ class RamachandranComponent extends PolymerElement {
         rows.exit().remove();
         //
         const cells = rows.selectAll('td')
-            .data((d) => [d.chain, d.num, d.aa, d.phi, d.psi])
+            .data((d) => [d.chainId, d.num, d.aa, d.phi, d.psi])
             .text((d) => d);
         //
         cells.enter()
