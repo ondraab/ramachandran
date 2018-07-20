@@ -10,7 +10,16 @@ export class Residue {
     private _authorResNum: number;
     private _modelId: number;
     private _chainId: string;
+    private _residueColor: string;
 
+
+    get residueColor(): string {
+        return this._residueColor;
+    }
+
+    set residueColor(value: string) {
+        this._residueColor = value;
+    }
     get modelId(): number {
         return this._modelId;
     }

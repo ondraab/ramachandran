@@ -591,7 +591,7 @@ class RamachandranComponent extends PolymerElement {
                                 model.residues.forEach((residue: any) => {
                                     residue.modelId = model.modelId;
                                     residue.chainId = chain.chainId;
-                                    if (switchPlotType(residue)) {
+                                    if (switchPlotType(residue) && residue.rama != null) {
                                         RamachandranComponent.residuesOnCanvas.push(residue);
                                         residues.push(residue);
                                     }
@@ -659,7 +659,7 @@ class RamachandranComponent extends PolymerElement {
             .attr('transform', (d) => 'translate(' + xScale(d.phi) + ',' + yScale(d.psi) + ')')
             .merge(this.svgContainer)
             // .style('fill', 'transparent')
-            .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz, true))
+            .style('fill', (d) => fillColorFunction(d, residueColorStyle, outliersType, rsrz,true))
             // .style('stroke', 'rgb(144, 142, 123)')
             .style('opacity', (d) => {
                 return RamachandranComponent.computeOpacity(fillColorFunction(d, residueColorStyle, outliersType, rsrz))
@@ -668,7 +668,7 @@ class RamachandranComponent extends PolymerElement {
                 if (d3.select(this).node().style.opacity == 0)
                     return;
 
-                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction);
+                onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
 
             })
             .on('mouseout', function(d: any) {
@@ -676,7 +676,7 @@ class RamachandranComponent extends PolymerElement {
                         return;
                     window.clearTimeout(RamachandranComponent.timeoutId);
 
-                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction)
+                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz)
                 }
             );
         // .on('click', function(d: any) {
@@ -1254,11 +1254,10 @@ class RamachandranComponent extends PolymerElement {
      * @param rsrz
      */
     public onMouseOverResidue(d: any, pdbId: string, ramaContourPlotType: number, residueColorStyle: number,
-                              tooltip: any, outliersType: any, rsrz: any, fillColorFunction: any){
+                              tooltip: any, outliersType: any, rsrz: any){
         let highlightColor = d.residueColor;
-        if (fillColorFunction(d, residueColorStyle, outliersType, rsrz) == '#000'){
+        if (d.residueColor == '#000')
             highlightColor = 'yellow';
-        }
 
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', d, pdbId);
         RamachandranComponent.changeContours(d, false, ramaContourPlotType);
@@ -1343,10 +1342,9 @@ class RamachandranComponent extends PolymerElement {
      * @param tooltip
      * @param outliersType
      * @param rsrz
-     * @param fillColorFunction
      */
     public onMouseOutResidue(d: any, pdbId: any, ramaContourPlotType: number, residueColorStyle: number,
-                             tooltip: any, outliersType: any, rsrz: any, fillColorFunction: any) {
+                             tooltip: any, outliersType: any, rsrz: any) {
         let outTime = new Date().getTime();
 
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOut', d, pdbId);
@@ -1396,7 +1394,7 @@ class RamachandranComponent extends PolymerElement {
                 node.on('mouseover', function () {
                     if (d3.select(`#${d.idSelector}`).style('opacity')== '0')
                         return;
-                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction)
+                    onMouseOverResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz)
 
                 });
 
@@ -1405,7 +1403,7 @@ class RamachandranComponent extends PolymerElement {
                         return;
                     window.clearTimeout(RamachandranComponent.timeoutId);
 
-                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, fillColorFunction)
+                    onMouseOutResidue(d, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz)
 
                 })
             }
