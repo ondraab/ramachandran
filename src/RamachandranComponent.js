@@ -274,13 +274,27 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 }
             }
         }
+        else
+            chainsString = this.chainsToShow.toString();
+        let modelsString = '';
+        if (this.modelsToShow.length > 2) {
+            for (const model of this.modelsToShow) {
+                modelsString += model.toString() + ', ';
+                if (this.modelsToShow.indexOf(model) == this.modelsToShow.length - 1)
+                    modelsString.slice(0, -2);
+                if (this.modelsToShow.indexOf(model) == 2) {
+                    modelsString += '...';
+                    break;
+                }
+            }
+        }
+        else
+            modelsString = this.modelsToShow.toString();
         let tooltip = d3.select("body")
             .append("div")
             .style("position", "absolute")
             .style("z-index", "10")
-            .style("visibility", "hidden")
-            .text(this.chainsToShow);
-        console.log(chainsString);
+            .style("visibility", "hidden");
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
             .style('width', '27%').style('margin', '5px 5px 5px 10px');
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
@@ -289,15 +303,31 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .attr('id', 'rama-info-chains').style('width', '36%')
             .style('text-align', 'right').text(chainsString);
         d3.select('#rama-info-chains').on("mouseover", () => {
+            d3.select('#rama-info-chains').style('cursor', 'default');
             return tooltip.style("visibility", "visible")
                 .style('opacity', .95)
+                .text(this.chainsToShow)
                 .style('left', (d3.event.pageX + 10) + 'px')
                 .style('top', (d3.event.pageY - 48) + 'px')
-                .style('background', 'gray');
+                .style('background', 'gray')
+                .style('padding', '2px 5px 2px 5px')
+                .transition().duration(50);
         })
             .on("mouseout", () => { return tooltip.style("visibility", "hidden"); });
         entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models')
-            .style('width', '36%').style('text-align', 'right').text(this.modelsToShow);
+            .style('width', '36%').style('text-align', 'right').text(modelsString);
+        d3.select('#rama-info-models').on("mouseover", () => {
+            d3.select('#rama-info-models').style('cursor', 'default');
+            return tooltip.style("visibility", "visible")
+                .text(this.modelsToShow.toString())
+                .style('opacity', .95)
+                .style('left', (d3.event.pageX + 10) + 'px')
+                .style('top', (d3.event.pageY - 48) + 'px')
+                .style('background', 'gray')
+                .style('padding', '2px 5px 2px 5px')
+                .transition().duration(50);
+        })
+            .on("mouseout", () => { return tooltip.style("visibility", "hidden"); });
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
         RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         this.addEventListeners();

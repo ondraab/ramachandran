@@ -120,7 +120,7 @@ export class ParsePDB {
     get modelArray(): number[] {
         return this._modelArray;
     }
-    
+
     get rsrz(): { [p: number]: Dictionary } {
         return this._rsrz;
     }
