@@ -12,7 +12,6 @@ export class ParsePDB {
     private pdbID: string;
     private _chainsArray: string[];
     private _modelArray: number[];
-    private _residueArray: object[];
     private _rsrz: {[id: number]: Dictionary; } = {};
     private _outlDict: {[id: number]: Dictionary; } = {};
     private _moleculs;
@@ -22,7 +21,6 @@ export class ParsePDB {
         this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
-        this._residueArray = [];
     }
 
     get moleculs() {
@@ -122,10 +120,7 @@ export class ParsePDB {
     get modelArray(): number[] {
         return this._modelArray;
     }
-
-    get residueArray(): object[] {
-        return this._residueArray;
-    }
+    
     get rsrz(): { [p: number]: Dictionary } {
         return this._rsrz;
     }

@@ -12,7 +12,6 @@ class ParsePDB {
         this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
-        this._residueArray = [];
     }
     get moleculs() {
         return this._moleculs;
@@ -104,9 +103,6 @@ class ParsePDB {
     }
     get modelArray() {
         return this._modelArray;
-    }
-    get residueArray() {
-        return this._residueArray;
     }
     get rsrz() {
         return this._rsrz;

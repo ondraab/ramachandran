@@ -20,7 +20,6 @@ var ParsePDB = function () {
         this._moleculs = [];
         this._chainsArray = [];
         this._modelArray = [];
-        this._residueArray = [];
     }
 
     _createClass(ParsePDB, [{
@@ -287,11 +286,6 @@ var ParsePDB = function () {
         key: "modelArray",
         get: function get() {
             return this._modelArray;
-        }
-    }, {
-        key: "residueArray",
-        get: function get() {
-            return this._residueArray;
         }
     }, {
         key: "rsrz",
