@@ -5,61 +5,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-
-var Res = function () {
-    _createClass(Res, [{
-        key: "residueColor",
-        get: function get() {
-            return this._residueColor;
-        },
-        set: function set(value) {
-            this._residueColor = value;
-        }
-    }, {
-        key: "prePro",
-        get: function get() {
-            return this._prePro;
-        },
-        set: function set(value) {
-            this._prePro = value;
-        }
-    }, {
-        key: "num",
-        get: function get() {
-            return this._num;
-        },
-        set: function set(value) {
-            this._num = value;
-        }
-    }, {
-        key: "aa",
-        get: function get() {
-            return this._aa;
-        },
-        set: function set(value) {
-            this._aa = value;
-        }
-    }]);
-
-    function Res(aa, phi, psi, rama, chain, num, cisPeptide, modelId, authorResNum) {
-        _classCallCheck(this, Res);
-
-        this._aa = aa;
-        this.phi = phi;
-        this.psi = psi;
-        this.rama = rama;
-        this.chain = chain;
-        this._num = num;
-        this.cisPeptide = cisPeptide;
-        this.modelId = modelId;
-        this._residueColor = '';
-        this.idSelector = '';
-        this._prePro = false;
-        this.authorResNum = authorResNum;
-    }
-
-    return Res;
-}();
+var Residue_1 = require("./Residue");
+var Model_1 = require("./Model");
+var Chain_1 = require("./Chain");
+var Molecule_1 = require("./Molecule");
 
 var ParsePDB = function () {
     function ParsePDB(pdb) {
@@ -93,6 +42,8 @@ var ParsePDB = function () {
                 try {
                     for (var _iterator = molecules.molecules[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                         var mol = _step.value;
+
+                        var chains = [];
                         var _iteratorNormalCompletion3 = true;
                         var _didIteratorError3 = false;
                         var _iteratorError3 = undefined;
@@ -100,6 +51,55 @@ var ParsePDB = function () {
                         try {
                             for (var _iterator3 = mol.chains[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                                 var chain = _step3.value;
+
+                                var models = [];
+
+                                var _loop = function _loop(mod) {
+                                    if (_this.chainsArray.indexOf(chain.chain_id) === -1) {
+                                        _this.chainsArray.push(chain.chain_id);
+                                    }
+                                    if (_this.modelArray.indexOf(mod.model_id) === -1) {
+                                        _this._modelArray.push(mod.model_id);
+                                    }
+                                    var residues = [];
+                                    var _iteratorNormalCompletion5 = true;
+                                    var _didIteratorError5 = false;
+                                    var _iteratorError5 = undefined;
+
+                                    try {
+                                        for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                                            var resid = _step5.value;
+
+                                            residues.push(new Residue_1.Residue(resid.residue_name, resid.phi, resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number));
+                                        }
+                                    } catch (err) {
+                                        _didIteratorError5 = true;
+                                        _iteratorError5 = err;
+                                    } finally {
+                                        try {
+                                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                                                _iterator5.return();
+                                            }
+                                        } finally {
+                                            if (_didIteratorError5) {
+                                                throw _iteratorError5;
+                                            }
+                                        }
+                                    }
+
+                                    residues.sort(function (a, b) {
+                                        if (a.num < b.num) return -1;
+                                        if (a.num > b.num) return 1;
+                                        return 0;
+                                    });
+                                    residues.forEach(function (value, index) {
+                                        if (index + 1 != residues.length && residues[index + 1].aa == 'PRO') {
+                                            value.prePro = true;
+                                        }
+                                    });
+                                    models.push(new Model_1.Model(mod.model_id, residues));
+                                };
+
                                 var _iteratorNormalCompletion4 = true;
                                 var _didIteratorError4 = false;
                                 var _iteratorError4 = undefined;
@@ -108,36 +108,7 @@ var ParsePDB = function () {
                                     for (var _iterator4 = chain.models[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
                                         var mod = _step4.value;
 
-                                        if (this.chainsArray.indexOf(chain.chain_id) === -1) {
-                                            this.chainsArray.push(chain.chain_id);
-                                        }
-                                        if (this.modelArray.indexOf(mod.model_id) === -1) {
-                                            this._modelArray.push(mod.model_id);
-                                        }
-                                        var _iteratorNormalCompletion5 = true;
-                                        var _didIteratorError5 = false;
-                                        var _iteratorError5 = undefined;
-
-                                        try {
-                                            for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                                                var resid = _step5.value;
-
-                                                this._residueArray.push(new Res(resid.residue_name, resid.phi, resid.psi, resid.rama, chain.chain_id, resid.residue_number, resid.cis_peptide, mod.model_id, resid.author_residue_number));
-                                            }
-                                        } catch (err) {
-                                            _didIteratorError5 = true;
-                                            _iteratorError5 = err;
-                                        } finally {
-                                            try {
-                                                if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                                                    _iterator5.return();
-                                                }
-                                            } finally {
-                                                if (_didIteratorError5) {
-                                                    throw _iteratorError5;
-                                                }
-                                            }
-                                        }
+                                        _loop(mod);
                                     }
                                 } catch (err) {
                                     _didIteratorError4 = true;
@@ -153,6 +124,13 @@ var ParsePDB = function () {
                                         }
                                     }
                                 }
+
+                                models.sort(function (a, b) {
+                                    if (a.modelId < b.modelId) return -1;
+                                    if (a.modelId > b.modelId) return 1;
+                                    return 0;
+                                });
+                                chains.push(new Chain_1.Chain(chain.chain_id, models));
                             }
                         } catch (err) {
                             _didIteratorError3 = true;
@@ -168,6 +146,13 @@ var ParsePDB = function () {
                                 }
                             }
                         }
+
+                        chains.sort(function (a, b) {
+                            if (a.chainId < b.chainId) return -1;
+                            if (a.chainId > b.chainId) return 1;
+                            return 0;
+                        });
+                        this._moleculs.push(new Molecule_1.Molecule(mol.entity_id, chains));
                     }
                 } catch (err) {
                     _didIteratorError = true;
@@ -184,19 +169,10 @@ var ParsePDB = function () {
                     }
                 }
 
-                this.residueArray.sort(function (a, b) {
-                    if (a.num < b.num) return -1;
-                    if (a.num > b.num) return 1;
+                this._moleculs.sort(function (a, b) {
+                    if (a.entityId < b.entityId) return -1;
+                    if (a.entityId > b.entityId) return 1;
                     return 0;
-                });
-                this.residueArray.forEach(function (value, index) {
-                    if (index + 1 != _this.residueArray.length) {
-                        if (_this.residueArray[index + 1].num - value.num == 1) {
-                            if (_this.residueArray[index + 1].aa == 'PRO') {
-                                value.prePro = true;
-                            }
-                        }
-                    }
                 });
                 xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID, false);
                 xmlHttp.send();
