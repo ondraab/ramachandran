@@ -3,7 +3,7 @@ import {Model} from "./Model";
 import {Chain} from "./Chain";
 import {Molecule} from "./Molecule";
 
-interface Dictionary {
+export interface Dictionary {
     outliersType: string[];
 }
 
