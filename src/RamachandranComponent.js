@@ -10,11 +10,16 @@ const parsePdb_1 = require("./parsePdb");
 class RamachandranComponent extends polymer_element_js_1.PolymerElement {
     static get properties() {
         return {
-            pdbId: {
-                type: String,
+            // pdbId: {
+            //     type: String,
+            //     reflectToAttribute: true,
+            //     notify: true,
+            //     observer: '_pdbIdChanged'
+            // },
+            pdbIds: {
+                type: Array,
                 reflectToAttribute: true,
                 notify: true,
-                observer: '_pdbIdChanged'
             },
             chainsToShow: {
                 type: Array,
@@ -41,10 +46,16 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         RamachandranComponent.width = this.width;
         this.createChart = this.createChart.bind(this);
         this.fillColorFunction = this.fillColorFunction.bind(this);
-        const pdb = new parsePdb_1.default(this.pdbId);
+        RamachandranComponent.parsedPdb = [];
+        this.pdbIds.forEach((pdbId) => {
+            const pdb = new parsePdb_1.default(pdbId);
+            pdb.downloadAndParse();
+            RamachandranComponent.parsedPdb.push(pdb);
+        });
+        const pdb = new parsePdb_1.default(this.pdbIds[0]);
         pdb.downloadAndParse();
         // RamachandranComponent.jsonObject = pdb.residueArray;
-        RamachandranComponent.molecules = pdb.moleculs;
+        RamachandranComponent.molecules = pdb.molecules;
         this.outliersType = pdb.outlDict;
         this.rsrz = pdb.rsrz;
         RamachandranComponent.hiddenResidues = [];
@@ -86,13 +97,18 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         RamachandranComponent.tooltipWidth = 90;
     }
     _pdbIdChanged(newValue, oldValue) {
-        if (typeof oldValue == 'undefined')
+        if (typeof oldValue == 'undefined' || newValue.length == 0)
             return;
-        const pdb = new parsePdb_1.default(this.pdbId);
-        pdb.downloadAndParse();
-        RamachandranComponent.molecules = pdb.moleculs;
+        this.pdbIds.forEach((pdbId) => {
+            const pdb = new parsePdb_1.default(pdbId);
+            pdb.downloadAndParse();
+        });
+        // const pdb = new ParsePDB(this.pdbId);
+        // pdb.downloadAndParse();
+        //
+        // RamachandranComponent.molecules = pdb.molecules;
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShow);
-        d3.select('#rama-info-pdbid').text(this.pdbId.toUpperCase());
+        // d3.select('#rama-info-pdbid').text(this.pdbId.toUpperCase());
     }
     _chainsChanged(newValue, oldValue) {
         if (typeof oldValue == 'undefined')
@@ -129,6 +145,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         this.xMap = (d) => xScale(xValue(d));
         // tooltip
         this.tooltip = d3.select('body').append('div')
+            .attr('class', 'rama-tooltip')
+            .attr('height', 0)
+            .style('opacity', 0);
+        this.tooltip2 = d3.select('body').append('div')
             .attr('class', 'rama-tooltip')
             .attr('height', 0)
             .style('opacity', 0);
@@ -299,7 +319,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
             .style('width', '27%').style('margin', '5px 5px 5px 10px');
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
-            .attr('id', 'rama-info-pdbid').text(this.pdbId.toUpperCase());
+            .attr('id', 'rama-info-pdbid');
+        // .text(this.pdbId.toUpperCase());
         entryInfo.append('div').style('display', 'inline-block')
             .attr('id', 'rama-info-chains').style('width', '36%')
             .style('text-align', 'right').text(chainsString);
@@ -355,7 +376,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         RamachandranComponent.residuesOnCanvas = [];
         RamachandranComponent.outliersList = [];
         // let width = 500;
-        const { fillColorFunction, outliersType, rsrz, tooltip, residueColorStyle, width } = this;
+        const { fillColorFunction, outliersType, rsrz, tooltip, residueColorStyle, width, svgContainer, tooltip2 } = this;
         let { onMouseOutResidue, onMouseOverResidue } = this;
         const pdbId = this.pdbId;
         // scales
@@ -447,9 +468,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         // outliersText
         d3.selectAll('.outliers').remove();
         d3.selectAll('table').remove();
-        function filterModels() {
+        function filterModels(pdb) {
             let residues = [];
-            RamachandranComponent.molecules.forEach((molecule) => {
+            pdb.molecules.forEach((molecule) => {
                 molecule.chains.forEach((chain) => {
                     if (chainsToShow.indexOf(chain.chainId) != -1) {
                         chain.models.forEach((model) => {
@@ -467,9 +488,26 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                     }
                 });
             });
+            // RamachandranComponent.molecules.forEach((molecule: Molecule) => {
+            //     molecule.chains.forEach((chain: Chain) => {
+            //         if (chainsToShow.indexOf(chain.chainId) != -1) {
+            //             chain.models.forEach((model: Model) => {
+            //                 if (modelsToShow.indexOf(model.modelId) != -1) {
+            //                     model.residues.forEach((residue: Residue) => {
+            //                         residue.modelId = model.modelId;
+            //                         residue.chainId = chain.chainId;
+            //                         if (switchPlotType(residue) && residue.rama != null) {
+            //                             RamachandranComponent.residuesOnCanvas.push(residue);
+            //                             residues.push(residue);
+            //                         }
+            //                     })
+            //                 }
+            //             });
+            //         }});
+            // });
             return residues;
         }
-        let filteredResidues = filterModels().sort((residue1, residue2) => {
+        let templatePdbResidues = filterModels(RamachandranComponent.parsedPdb[0]).sort((residue1, residue2) => {
             if (typeof rsrz[residue1.num] != 'undefined') {
                 return 1;
             }
@@ -489,57 +527,135 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 return -1;
             }
         });
-        this.svgContainer.selectAll('.shapes')
-            .data(filteredResidues)
-            .enter()
-            .append('g')
-            .attr('class', 'dataGroup')
-            .append('path')
-            .attr('id', (residue) => {
-            const id = residue.aa + '-' + residue.chainId + '-' + residue.modelId + '-' + residue.num;
-            residue.idSelector = id;
-            if (residueColorStyle !== 3) {
-                if (residue.rama === 'OUTLIER') {
+        let templatePdb = this.pdbIds[0];
+        function addResiduesToCanvas(residues) {
+            svgContainer.selectAll('.shapes')
+                .data(residues)
+                .enter()
+                .append('g')
+                .attr('class', 'dataGroup')
+                .append('path')
+                .attr('id', (residue) => {
+                const id = `${residue.aa}-${residue.chainId}-${residue.modelId}-${residue.authorResNum}-${residue.pdbId}`;
+                // residue.aa + '-' + residue.chainId + '-' + residue.modelId + '-' + residue.num + residue.pdbId;
+                residue.idSelector = id;
+                if (residueColorStyle !== 3) {
+                    if (residue.rama === 'OUTLIER') {
+                        RamachandranComponent.outliersList.push(residue);
+                    }
+                    if (residue.rama === 'Favored') {
+                        RamachandranComponent.favored++;
+                    }
+                    if (residue.rama === 'Allowed') {
+                        RamachandranComponent.allowed++;
+                    }
+                    return id;
+                }
+                if (residue.rama === 'OUTLIER' && typeof rsrz[residue.num] !== 'undefined') {
                     RamachandranComponent.outliersList.push(residue);
-                }
-                if (residue.rama === 'Favored') {
-                    RamachandranComponent.favored++;
-                }
-                if (residue.rama === 'Allowed') {
-                    RamachandranComponent.allowed++;
+                    return id;
                 }
                 return id;
-            }
-            if (residue.rama === 'OUTLIER' && typeof rsrz[residue.num] !== 'undefined') {
-                RamachandranComponent.outliersList.push(residue);
-                return id;
-            }
-            return id;
-        })
-            .attr('d', (residue) => {
-            if (residue.aa === 'GLY') {
-                return RamachandranComponent.symbolTypes.triangle();
-            }
-            return RamachandranComponent.symbolTypes.circle();
-        })
-            .attr('transform', (residue) => 'translate(' + xScale(residue.phi) + ',' + yScale(residue.psi) + ')')
-            .merge(this.svgContainer)
-            // .style('fill', 'transparent')
-            .style('fill', (residue) => fillColorFunction(residue, residueColorStyle, outliersType, rsrz, true))
-            // .style('stroke', 'rgb(144, 142, 123)')
-            .style('opacity', (residue) => {
-            return RamachandranComponent.computeOpacity(fillColorFunction(residue, residueColorStyle, outliersType, rsrz));
-        })
-            .on('mouseover', function (node) {
-            if (d3.select(this).node().style.opacity == 0)
+            })
+                .attr('d', (residue) => {
+                if (residue.aa === 'GLY') {
+                    return RamachandranComponent.symbolTypes.triangle();
+                }
+                return RamachandranComponent.symbolTypes.circle();
+            })
+                .attr('transform', (residue) => `translate(${xScale(residue.phi)},${yScale(residue.psi)})`)
+                .merge(svgContainer)
+                // .style('fill', 'transparent')
+                .style('fill', (residue) => fillColorFunction(residue, residueColorStyle, outliersType, rsrz, true))
+                // .style('stroke', 'rgb(144, 142, 123)')
+                .style('opacity', (residue) => {
+                return RamachandranComponent.computeOpacity(fillColorFunction(residue, residueColorStyle, outliersType, rsrz));
+            })
+                .on('mouseover', function (node) {
+                if (d3.select(this).node().style.opacity == 0)
+                    return;
+                onMouseOverResidue(node, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, true);
+            })
+                .on('mouseout', function (node) {
+                if (d3.select(this).node().style.opacity == 0)
+                    return;
+                window.clearTimeout(RamachandranComponent.timeoutId);
+                onMouseOutResidue(node, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, true);
+            });
+        }
+        addResiduesToCanvas(templatePdbResidues);
+        let otherResidues = [];
+        RamachandranComponent.parsedPdb.forEach((pdb, index) => {
+            if (index < 1)
                 return;
-            onMouseOverResidue(node, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
+            otherResidues = otherResidues.concat(filterModels(pdb));
+        });
+        addResiduesToCanvas(otherResidues);
+        function getDistance(point1, point2) {
+            let xs = xScale(point1.phi) - xScale(point2.phi);
+            xs = xs * xs;
+            let ys = yScale(point1.psi) - yScale(point2.psi);
+            ys = ys * ys;
+            return Math.sqrt(xs + ys);
+        }
+        let distantResidues = [];
+        otherResidues.forEach((residue) => {
+            let templateResidue = d3.select(`#${residue.idSelector.replace(residue.pdbId, templatePdb)}`);
+            if (!templateResidue.empty()) {
+                let residue2 = d3.select(`#${residue.idSelector}`).data()[0];
+                let distance = getDistance(templateResidue.data()[0], residue2);
+                if (distance > 80) {
+                    distantResidues.push({ templateResidue: templateResidue.data()[0], otherResidue: residue2 });
+                }
+            }
+        });
+        svgContainer.selectAll('line')
+            .data(distantResidues)
+            .enter()
+            .append('line')
+            .attr('x1', (d) => {
+            return xScale(d.templateResidue.phi);
+        })
+            .attr('y1', (d) => {
+            return yScale(d.templateResidue.psi);
+        })
+            .attr('y2', (d) => {
+            return yScale(d.otherResidue.psi);
+        })
+            .attr('x2', (d) => {
+            return xScale(d.otherResidue.phi);
+        })
+            .attr("stroke-width", 1.5)
+            .attr("stroke", "#aa5519")
+            .attr('opacity', '0.1')
+            .on('mouseover', function (node) {
+            onMouseOverResidue(node.templateResidue, node.templateResidue.pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, false);
+            onMouseOverResidue(node.otherResidue, node.otherResidue.pdbId, ramaContourPlotType, residueColorStyle, tooltip2, outliersType, rsrz, false);
+            tooltip.transition()
+                .style('opacity', .95)
+                .style('left', xScale(node.templateResidue.phi) - 50 + 'px')
+                .style('top', yScale(node.templateResidue.psi) + 45 + 'px')
+                .style('height', RamachandranComponent.tooltipHeight)
+                .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
+            tooltip2.transition()
+                .style('opacity', .95)
+                .style('left', xScale(node.otherResidue.phi) - 30 + 'px')
+                .style('top', yScale(node.otherResidue.psi) + 30 + 'px')
+                .style('height', RamachandranComponent.tooltipHeight)
+                .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
+            d3.select(this).attr("stroke-width", 2)
+                .attr('opacity', '0.8');
         })
             .on('mouseout', function (node) {
-            if (d3.select(this).node().style.opacity == 0)
-                return;
             window.clearTimeout(RamachandranComponent.timeoutId);
-            onMouseOutResidue(node, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
+            onMouseOutResidue(node.templateResidue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, false);
+            onMouseOutResidue(node.otherResidue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, false);
+            tooltip.transition()
+                .style('opacity', 0);
+            tooltip2.transition()
+                .style('opacity', 0);
+            d3.select(this).attr("stroke-width", 1.5)
+                .attr('opacity', '0.1');
         });
         // .on('click', function(d: any) {
         //     if (highlightedResidues.length != 0) {
@@ -651,7 +767,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             const res = getResidueNode(event);
             if (RamachandranComponent.highlightedResidues.length != 0) {
                 RamachandranComponent.highlightedResidues.forEach((node) => {
-                    console.log(typeof node);
                     node.attr('d', (residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
                         .style('fill', (residue) => fillColorFunction(residue, residueColorStyle, outliersType, rsrz))
                         .style('display', 'block');
@@ -790,53 +905,117 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * add summary infobelow the plot
      */
     addSummaryInfo() {
+        switch (this.residueColorStyle) {
+            case 1:
+                d3.selectAll('.rama-sum-table').remove();
+                d3.select('#rama-sum').append('table').classed('rama-sum-table', true).append('tr')
+                    .classed('rama-sum-table-headline', true).append('th')
+                    .text('PDB');
+                d3.select('.rama-sum-table-headline').append('th').text('Preferred regions');
+                d3.select('.rama-sum-table-headline').append('th').text('Allowed regions');
+                d3.select('.rama-sum-table-headline').append('th').text('Outliers');
+                RamachandranComponent.parsedPdb.forEach((pdb) => {
+                    const totalResidues = pdb.favored + pdb.allowed + pdb.outliersList.length;
+                    d3.select('.rama-sum-table').append('tr')
+                        .classed(`table-row-${pdb.pdbID}`, true).append('td').text(pdb.pdbID);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.favored)} (${String((pdb.favored / totalResidues * 100)
+                        .toFixed(0))} %)`);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.allowed)} (${String((pdb.allowed / totalResidues * 100)
+                        .toFixed(0))} %)`);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.outliersList.length)} (${String((pdb.outliersList
+                        .length / totalResidues * 100).toFixed(0))} %)`);
+                });
+                break;
+            case 2:
+                d3.selectAll('.rama-sum-table').remove();
+                d3.select('#rama-sum').append('table').classed('rama-sum-table', true)
+                    .append('tr').classed('rama-sum-table-headline', true).append('th')
+                    .text('PDB');
+                d3.select('.rama-sum-table-headline').append('th').text('Ramachandran outliers');
+                d3.select('.rama-sum-table-headline').append('th').text('Sidechain outliers');
+                d3.select('.rama-sum-table-headline').append('th').text('Clashes');
+                RamachandranComponent.parsedPdb.forEach((pdb) => {
+                    const totalResidues = pdb.favored + pdb.allowed + pdb.outliersList.length;
+                    d3.select('.rama-sum-table').append('tr').classed(`table-row-${pdb.pdbID}`, true)
+                        .append('td').text(pdb.pdbID);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.ramaOutl)} (${String((pdb.ramaOutl / totalResidues * 100)
+                        .toFixed(0))} %)`);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.sidechainOutl)} (${String((pdb.sidechainOutl / totalResidues * 100)
+                        .toFixed(0))} %)`);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(pdb.clashes)} (${String((pdb.clashes / totalResidues * 100)
+                        .toFixed(0))} %)`);
+                });
+                break;
+            case 3:
+                d3.selectAll('.rama-sum-table').remove();
+                d3.select('#rama-sum').append('table').classed('rama-sum-table', true).append('tr')
+                    .classed('rama-sum-table-headline', true).append('th')
+                    .text('PDB');
+                d3.select('.rama-sum-table-headline').append('th').text('RSRZ');
+                RamachandranComponent.parsedPdb.forEach((pdb) => {
+                    const totalResidues = pdb.favored + pdb.allowed + pdb.outliersList.length;
+                    d3.select('.rama-sum-table').append('tr')
+                        .classed(`table-row-${pdb.pdbID}`, true)
+                        .append('td').text(pdb.pdbID);
+                    d3.select(`.table-row-${pdb.pdbID}`).append('td')
+                        .text(`${String(Object.keys(pdb.rsrz).length)} (${String((Object.keys(pdb.rsrz).length
+                        / totalResidues * 100).toFixed(0))} %)`);
+                });
+        }
         let resArrayLength = RamachandranComponent.residuesOnCanvas.length;
         if (RamachandranComponent.residuesOnCanvas.length == 0)
             resArrayLength = 1;
-        switch (this.residueColorStyle) {
-            case 1:
-                d3.selectAll('#rama-sum-div').remove();
-                d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
-                    .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
-                    .text('Preferred regions: ' + String(RamachandranComponent.favored)
-                    + ' (' + String((RamachandranComponent.favored / resArrayLength * 100).toFixed(0))
-                    + '%)').enter();
-                d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
-                    .attr('id', 'rama-sum-middle')
-                    .text('Allowed regions: ' + String(RamachandranComponent.allowed)
-                    + ' (' + String((RamachandranComponent.allowed / resArrayLength * 100).toFixed(0))
-                    + '%)').enter();
-                d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
-                    .attr('id', 'rama-sum-thinnest')
-                    .text('Outliers: ' + String(RamachandranComponent.outliersList.length)
-                    + ' (' + String((RamachandranComponent.outliersList.length / resArrayLength * 100).toFixed(0)) + '%)').enter();
-                break;
-            case 2:
-                d3.selectAll('#rama-sum-div').remove();
-                d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
-                    .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
-                    .text('Ramachandran outliers: ' + String(this.ramachandranOutliers)
-                    + ' (' + String((this.ramachandranOutliers / resArrayLength * 100).toFixed(0)) +
-                    '%)').enter();
-                d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
-                    .attr('id', 'rama-sum-middle')
-                    .text('Sidechain outliers: ' + String(this.sidechainOutliers)
-                    + ' (' + String((this.sidechainOutliers / resArrayLength * 100).toFixed(0)) + '%)').enter();
-                d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
-                    .attr('id', 'rama-sum-thinnest')
-                    .text('Clashes: ' + String(this.clashes)
-                    + ' (' + String((this.clashes / resArrayLength * 100).toFixed(0)) + '%)').enter();
-                break;
-            case 3:
-                d3.selectAll('#rama-sum-div').remove();
-                d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
-                    .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
-                    .text('RSRZ: ' + String(this.rsrzCount)
-                    + ' (' + String((this.rsrzCount / resArrayLength * 100).toFixed(0)) + '%) ').enter();
-                break;
-            default:
-                return;
-        }
+        // switch (this.residueColorStyle) {
+        //     case 1:
+        //         d3.selectAll('#rama-sum-div').remove();
+        //         d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
+        //             .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
+        //             .text('Preferred regions: ' + String(RamachandranComponent.favored)
+        //                 + ' (' + String((RamachandranComponent.favored / resArrayLength * 100).toFixed(0))
+        //                 + '%)').enter();
+        //         d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
+        //             .attr('id', 'rama-sum-middle')
+        //             .text('Allowed regions: ' + String(RamachandranComponent.allowed)
+        //                 + ' (' + String((RamachandranComponent.allowed / resArrayLength * 100).toFixed(0))
+        //                 + '%)').enter();
+        //         d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
+        //             .attr('id', 'rama-sum-thinnest')
+        //             .text('Outliers: ' + String(RamachandranComponent.outliersList.length)
+        //                 + ' (' + String((RamachandranComponent.outliersList.length / resArrayLength * 100).toFixed(0)) + '%)').enter();
+        //
+        //         break;
+        //     case 2:
+        //         d3.selectAll('#rama-sum-div').remove();
+        //         d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
+        //             .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
+        //             .text('Ramachandran outliers: ' + String(this.ramachandranOutliers)
+        //                 + ' (' + String((this.ramachandranOutliers / resArrayLength * 100).toFixed(0)) +
+        //                 '%)').enter();
+        //         d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
+        //             .attr('id', 'rama-sum-middle')
+        //             .text('Sidechain outliers: ' + String(this.sidechainOutliers)
+        //                 + ' (' + String((this.sidechainOutliers / resArrayLength * 100).toFixed(0)) + '%)').enter();
+        //         d3.select('#rama-sum-div').append('div').attr('class', 'rama-sum-cell')
+        //             .attr('id', 'rama-sum-thinnest')
+        //             .text('Clashes: ' + String(this.clashes)
+        //                 + ' (' + String((this.clashes / resArrayLength * 100).toFixed(0)) + '%)').enter();
+        //         break;
+        //     case 3:
+        //         d3.selectAll('#rama-sum-div').remove();
+        //         d3.select('#rama-sum').append('div').attr('id', 'rama-sum-div')
+        //             .append('div').attr('class', 'rama-sum-cell').attr('id', 'rama-sum-widest')
+        //             .text('RSRZ: ' + String(this.rsrzCount)
+        //                 + ' (' + String((this.rsrzCount / resArrayLength * 100).toFixed(0)) + '%) ').enter();
+        //         break;
+        //     default:
+        //         return;
+        // }
     }
     /**
      * compute summary stats of ramachandran diagram
@@ -868,8 +1047,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @returns {string} hex of color
      */
     fillColorFunction(residue, drawingType, outliersType, rsrz, compute = false) {
-        if (compute)
-            this.computeStats(residue);
+        // if (compute)
+        //     this.computeStats(residue);
         switch (drawingType) {
             case 1:
                 if (residue.rama === 'OUTLIER') {
@@ -950,7 +1129,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 entityId: residue.modelId,
                 entry: pdbId,
                 residueName: residue.aa,
-                residueNumber: residue.num
+                residueNumber: residue.authorResNum
             } });
         window.dispatchEvent(event);
     }
@@ -1026,7 +1205,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      */
     static tooltipText(residue) {
         // language=HTML
-        return `<b>${residue.chainId} ${residue.num} ${residue.aa}</b><br/>\u03A6: ${residue.phi}<br/>\u03A8: ${residue.psi}`;
+        return `<b>${residue.pdbId.toUpperCase()}<br>${residue.chainId} ${residue.authorResNum} ${residue.aa}</b><br/>\u03A6: ${residue.phi}<br/>\u03A8: ${residue.psi}`;
     }
     /**
      * change object size on hover
@@ -1063,12 +1242,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @param outliersType
      * @param rsrz
      */
-    onMouseOverResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
+    onMouseOverResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, changeCont) {
         let highlightColor = residue.residueColor;
         if (residue.residueColor == '#000')
             highlightColor = 'yellow';
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOver', residue, pdbId);
-        RamachandranComponent.changeContours(residue, false, ramaContourPlotType);
+        if (changeCont)
+            RamachandranComponent.changeContours(residue, false, ramaContourPlotType);
         switch (residueColorStyle) {
             case 1:
                 if (residue.rama === 'Favored') {
@@ -1127,12 +1307,14 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             default:
                 break;
         }
-        tooltip.transition()
-            .style('opacity', .95)
-            .style('left', (d3.event.pageX + 10) + 'px')
-            .style('top', (d3.event.pageY - 48) + 'px')
-            .style('height', RamachandranComponent.tooltipHeight)
-            .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
+        if (changeCont) {
+            tooltip.transition()
+                .style('opacity', .95)
+                .style('left', (d3.event.pageX + 10) + 'px')
+                .style('top', (d3.event.pageY - 48) + 'px')
+                .style('height', RamachandranComponent.tooltipHeight)
+                .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
+        }
         d3.select(`#${residue.idSelector}`)
             .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false))
             .style('fill', highlightColor)
@@ -1148,8 +1330,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
      * @param tooltip
      * @param outliersType
      * @param rsrz
+     * @param changeCount
      */
-    onMouseOutResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz) {
+    onMouseOutResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, changeCount) {
         let outTime = new Date().getTime();
         RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.mouseOut', residue, pdbId);
         if (RamachandranComponent.highlightedResidues.indexOf(residue) > -1) {
@@ -1162,12 +1345,14 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .style('opacity', () => {
             return RamachandranComponent.computeOpacity(residue.residueColor);
         });
-        tooltip.transition()
-            .style('opacity', 0);
-        if ((outTime - RamachandranComponent.currentTime) > 600) {
-            window.setTimeout(() => {
-                RamachandranComponent.changeContours(residue, true, ramaContourPlotType);
-            }, 50);
+        if (changeCount) {
+            tooltip.transition()
+                .style('opacity', 0);
+            if ((outTime - RamachandranComponent.currentTime) > 600) {
+                window.setTimeout(() => {
+                    RamachandranComponent.changeContours(residue, true, ramaContourPlotType);
+                }, 50);
+            }
         }
     }
     /**
@@ -1190,13 +1375,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 node.on('mouseover', function () {
                     if (d3.select(`#${residue.idSelector}`).style('opacity') == '0')
                         return;
-                    onMouseOverResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
+                    onMouseOverResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, true);
                 });
                 node.on('mouseout', function () {
                     if (d3.select(`#${residue.idSelector}`).style('opacity') == '0')
                         return;
                     window.clearTimeout(RamachandranComponent.timeoutId);
-                    onMouseOutResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz);
+                    onMouseOutResidue(residue, pdbId, ramaContourPlotType, residueColorStyle, tooltip, outliersType, rsrz, true);
                 });
             }
         });
@@ -1394,11 +1579,12 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('fill', (residue) => fillColorFunction(residue, drawingType, outliersType, rsrz));
         })
             //
-            .on('mouseout', function (d) {
+            .on('mouseout', function (residue) {
             d3.select(this)
                 .style('background-color', 'transparent')
                 .style('cursor', 'default');
-            d3.select('#' + d.aa + '-' + d.chainId + '-' + d.modelId + '-' + d.num)
+            // d3.select('#' +  d.aa + '-' + d.chainId + '-' + d.modelId + '-' + d.num + d.pdbId)
+            d3.select(`#${residue.aa}-${residue.chainId}-${residue.modelId}-${residue.num}-${residue.pdbId}`)
                 .transition()
                 // .duration(50)
                 .attr('d', (dat) => {

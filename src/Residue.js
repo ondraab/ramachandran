@@ -7,6 +7,12 @@ class Residue {
     set residueColor(value) {
         this._residueColor = value;
     }
+    get pdbId() {
+        return this._pdbId;
+    }
+    set pdbId(value) {
+        this._pdbId = value;
+    }
     get modelId() {
         return this._modelId;
     }
@@ -55,7 +61,7 @@ class Residue {
     get authorResNum() {
         return this._authorResNum;
     }
-    constructor(aa, phi, psi, rama, num, cisPeptide, authorResNum) {
+    constructor(aa, phi, psi, rama, num, cisPeptide, authorResNum, pdbId) {
         this._aa = aa;
         this._phi = phi;
         this._psi = psi;
@@ -63,6 +69,7 @@ class Residue {
         this._num = num;
         this._cisPeptide = cisPeptide;
         this._authorResNum = authorResNum;
+        this._pdbId = pdbId;
     }
 }
 exports.Residue = Residue;

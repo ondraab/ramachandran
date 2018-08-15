@@ -11,6 +11,7 @@ export class Residue {
     private _modelId: number;
     private _chainId: string;
     private _residueColor: string;
+    private _pdbId: string;
 
 
     get residueColor(): string {
@@ -20,6 +21,15 @@ export class Residue {
     set residueColor(value: string) {
         this._residueColor = value;
     }
+
+    get pdbId(): string {
+        return this._pdbId;
+    }
+
+    set pdbId(value: string) {
+        this._pdbId = value;
+    }
+
     get modelId(): number {
         return this._modelId;
     }
@@ -84,7 +94,8 @@ export class Residue {
         return this._authorResNum;
     }
 
-    constructor(aa: string, phi: number, psi: number, rama: string, num: number, cisPeptide: string, authorResNum: number) {
+    constructor(aa: string, phi: number, psi: number, rama: string, num: number, cisPeptide: string,
+                authorResNum: number, pdbId: string) {
         this._aa = aa;
         this._phi = phi;
         this._psi = psi;
@@ -92,5 +103,6 @@ export class Residue {
         this._num = num;
         this._cisPeptide = cisPeptide;
         this._authorResNum = authorResNum;
+        this._pdbId = pdbId;
     }
 }

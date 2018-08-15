@@ -8,34 +8,108 @@ export interface Dictionary {
 }
 
 export class ParsePDB {
-
-    private pdbID: string;
+    private _pdbID: string;
     private _chainsArray: string[];
     private _modelArray: number[];
     private _rsrz: {[id: number]: Dictionary; } = {};
     private _outlDict: {[id: number]: Dictionary; } = {};
-    private _moleculs;
+    private _molecules: Molecule[];
+    private _allowed: number;
+    private _favored: number;
+    private _clashes: number;
+    private _sidechainOutl: number;
+    private _ramaOutl: number;
+    private _outliersList: Residue[];
+    private _residueOnCanvas;
+
 
     constructor(pdb: string) {
-        this.pdbID = pdb.toLowerCase();
-        this._moleculs = [];
+        this._pdbID = pdb.toLowerCase();
+        this._molecules = [];
         this._chainsArray = [];
         this._modelArray = [];
+        this._allowed = 0;
+        this._favored = 0;
+        this._ramaOutl = 0;
+        this._sidechainOutl = 0;
+        this._clashes = 0;
+        this._outliersList = [];
+        this._residueOnCanvas = 0;
     }
 
-    get moleculs() {
-        return this._moleculs;
+    get residueOnCanvas() {
+        return this._residueOnCanvas;
+    }
+
+    set residueOnCanvas(value) {
+        this._residueOnCanvas = value;
+    }
+
+    get pdbID(): string {
+        return this._pdbID;
+    }
+
+    set pdbID(value: string) {
+        this._pdbID = value;
+    }
+
+    get molecules() {
+        return this._molecules;
+    }
+
+    get outliersList(): Residue[] {
+        return this._outliersList;
+    }
+
+    set outliersList(value: Residue[]) {
+        this._outliersList = value;
+    }
+    get favored(): number {
+        return this._favored;
+    }
+
+    set favored(value: number) {
+        this._favored = value;
+    }
+    get allowed(): number {
+        return this._allowed;
+    }
+
+    set allowed(value: number) {
+        this._allowed = value;
+    }
+
+    get ramaOutl(): number {
+        return this._ramaOutl;
+    }
+
+    set ramaOutl(value: number) {
+        this._ramaOutl = value;
+    }
+    get sidechainOutl(): number {
+        return this._sidechainOutl;
+    }
+
+    set sidechainOutl(value: number) {
+        this._sidechainOutl = value;
+    }
+    get clashes(): number {
+        return this._clashes;
+    }
+
+    set clashes(value: number) {
+        this._clashes = value;
     }
 
     public downloadAndParse() {
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.open('GET',
-            'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this.pdbID, false);
+            'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this._pdbID, false);
         xmlHttp.send();
         if (xmlHttp.status !== 200) {
             return;
         } else {
-            const molecules = JSON.parse(xmlHttp.responseText)[this.pdbID];
+            const molecules = JSON.parse(xmlHttp.responseText)[this._pdbID];
             for (const mol of molecules.molecules) {
                 let chains = [];
                 for (const chain of mol.chains) {
@@ -49,8 +123,23 @@ export class ParsePDB {
                         }
                         let residues = [];
                         for (const resid of mod.residues) {
-                            residues.push(new Residue(resid.residue_name, resid.phi,
-                                resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number));
+                            const residue = new Residue(resid.residue_name, resid.phi,
+                                resid.psi, resid.rama, resid.residue_number, resid.cis_peptide,
+                                resid.author_residue_number, this._pdbID);
+                            switch (resid.rama){
+                                case 'OUTLIER':
+                                    this.outliersList.push(residue);
+                                    break;
+                                case 'Favored':
+                                    this.favored++;
+                                    break;
+                                case 'Allowed':
+                                    this.allowed++;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            residues.push(residue);
                         }
                         residues.sort((a: Residue, b: Residue) => {
                             if (a.num < b.num)
@@ -82,9 +171,9 @@ export class ParsePDB {
                         return 1;
                     return 0;
                 });
-                this._moleculs.push(new Molecule(mol.entity_id, chains))
+                this._molecules.push(new Molecule(mol.entity_id, chains, this._pdbID))
             }
-            this._moleculs.sort((a: Molecule, b: Molecule) => {
+            this._molecules.sort((a: Molecule, b: Molecule) => {
                 if (a.entityId < b.entityId)
                     return -1;
                 if (a.entityId > b.entityId)
@@ -92,17 +181,23 @@ export class ParsePDB {
                 return 0;
             });
             xmlHttp.open('GET',
-                'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID,
+                'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this._pdbID,
                 false);
             xmlHttp.send();
-            const mols = JSON.parse(xmlHttp.responseText)[this.pdbID];
+            const mols = JSON.parse(xmlHttp.responseText)[this._pdbID];
             for (const mol of mols.molecules) {
                 for (const chain of mol.chains) {
                     for (const mod of chain.models) {
                         for (const res of mod.residues) {
-                            if (res.outlier_types[0] === 'RSRZ') {
+                            if (res.outlier_types[0] == 'RSRZ') {
                                 this._rsrz[res.residue_number] = {outliersType: res.outlier_types};
                             } else {
+                                if (res.outlier_types.indexOf('clashes') != -1)
+                                    this._clashes++;
+                                if (res.outlier_types.indexOf('ramachandran_outliers') != -1)
+                                    this._ramaOutl++;
+                                if (res.outlier_types.indexOf('sidechain_outliers') != -1)
+                                    this._sidechainOutl++;
                                 this._outlDict[res.residue_number] = {outliersType: res.outlier_types};
                             }
 
@@ -113,6 +208,7 @@ export class ParsePDB {
             }
         }
     }
+
     get chainsArray(): string[] {
         return this._chainsArray;
     }

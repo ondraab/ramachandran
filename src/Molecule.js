@@ -1,9 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Molecule {
-    constructor(entityId, chains) {
+    constructor(entityId, chains, pdbId) {
         this._entityId = entityId;
         this._chains = chains;
+        this._pdbId = pdbId;
+    }
+    get pdbId() {
+        return this._pdbId;
+    }
+    set pdbId(value) {
+        this._pdbId = value;
     }
     get entityId() {
         return this._entityId;

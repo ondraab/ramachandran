@@ -95,14 +95,15 @@ div.outliers-container {
 #rama-settings {
   font-size: smaller;
 }
-#rama-sum-table {
+.rama-sum-table {
   width: 100%;
   font-style: italic;
+  font-size: 13px;
 }
 #rama-sum {
   margin-top: 10px;
   padding: 2px 0 2px 10px;
-  display: inline-block;
+  /*display: inline-block;*/
   width: 100%;
 }
 #rama-sum-div {

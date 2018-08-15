@@ -16,10 +16,17 @@ var ParsePDB = function () {
 
         this._rsrz = {};
         this._outlDict = {};
-        this.pdbID = pdb.toLowerCase();
-        this._moleculs = [];
+        this._pdbID = pdb.toLowerCase();
+        this._molecules = [];
         this._chainsArray = [];
         this._modelArray = [];
+        this._allowed = 0;
+        this._favored = 0;
+        this._ramaOutl = 0;
+        this._sidechainOutl = 0;
+        this._clashes = 0;
+        this._outliersList = [];
+        this._residueOnCanvas = 0;
     }
 
     _createClass(ParsePDB, [{
@@ -28,12 +35,12 @@ var ParsePDB = function () {
             var _this = this;
 
             var xmlHttp = new XMLHttpRequest();
-            xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this.pdbID, false);
+            xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this._pdbID, false);
             xmlHttp.send();
             if (xmlHttp.status !== 200) {
                 return;
             } else {
-                var molecules = JSON.parse(xmlHttp.responseText)[this.pdbID];
+                var molecules = JSON.parse(xmlHttp.responseText)[this._pdbID];
                 var _iteratorNormalCompletion = true;
                 var _didIteratorError = false;
                 var _iteratorError = undefined;
@@ -69,7 +76,21 @@ var ParsePDB = function () {
                                         for (var _iterator5 = mod.residues[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                                             var resid = _step5.value;
 
-                                            residues.push(new Residue_1.Residue(resid.residue_name, resid.phi, resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number));
+                                            var residue = new Residue_1.Residue(resid.residue_name, resid.phi, resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number, _this._pdbID);
+                                            switch (resid.rama) {
+                                                case 'OUTLIER':
+                                                    _this.outliersList.push(residue);
+                                                    break;
+                                                case 'Favored':
+                                                    _this.favored++;
+                                                    break;
+                                                case 'Allowed':
+                                                    _this.allowed++;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                            residues.push(residue);
                                         }
                                     } catch (err) {
                                         _didIteratorError5 = true;
@@ -151,7 +172,7 @@ var ParsePDB = function () {
                             if (a.chainId > b.chainId) return 1;
                             return 0;
                         });
-                        this._moleculs.push(new Molecule_1.Molecule(mol.entity_id, chains));
+                        this._molecules.push(new Molecule_1.Molecule(mol.entity_id, chains, this._pdbID));
                     }
                 } catch (err) {
                     _didIteratorError = true;
@@ -168,14 +189,14 @@ var ParsePDB = function () {
                     }
                 }
 
-                this._moleculs.sort(function (a, b) {
+                this._molecules.sort(function (a, b) {
                     if (a.entityId < b.entityId) return -1;
                     if (a.entityId > b.entityId) return 1;
                     return 0;
                 });
-                xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this.pdbID, false);
+                xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this._pdbID, false);
                 xmlHttp.send();
-                var mols = JSON.parse(xmlHttp.responseText)[this.pdbID];
+                var mols = JSON.parse(xmlHttp.responseText)[this._pdbID];
                 var _iteratorNormalCompletion2 = true;
                 var _didIteratorError2 = false;
                 var _iteratorError2 = undefined;
@@ -205,9 +226,12 @@ var ParsePDB = function () {
                                             for (var _iterator8 = _mod.residues[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
                                                 var res = _step8.value;
 
-                                                if (res.outlier_types[0] === 'RSRZ') {
+                                                if (res.outlier_types[0] == 'RSRZ') {
                                                     this._rsrz[res.residue_number] = { outliersType: res.outlier_types };
                                                 } else {
+                                                    if (res.outlier_types.indexOf('clashes') != -1) this._clashes++;
+                                                    if (res.outlier_types.indexOf('ramachandran_outliers') != -1) this._ramaOutl++;
+                                                    if (res.outlier_types.indexOf('sidechain_outliers') != -1) this._sidechainOutl++;
                                                     this._outlDict[res.residue_number] = { outliersType: res.outlier_types };
                                                 }
                                             }
@@ -273,9 +297,73 @@ var ParsePDB = function () {
             }
         }
     }, {
-        key: "moleculs",
+        key: "residueOnCanvas",
         get: function get() {
-            return this._moleculs;
+            return this._residueOnCanvas;
+        },
+        set: function set(value) {
+            this._residueOnCanvas = value;
+        }
+    }, {
+        key: "pdbID",
+        get: function get() {
+            return this._pdbID;
+        },
+        set: function set(value) {
+            this._pdbID = value;
+        }
+    }, {
+        key: "molecules",
+        get: function get() {
+            return this._molecules;
+        }
+    }, {
+        key: "outliersList",
+        get: function get() {
+            return this._outliersList;
+        },
+        set: function set(value) {
+            this._outliersList = value;
+        }
+    }, {
+        key: "favored",
+        get: function get() {
+            return this._favored;
+        },
+        set: function set(value) {
+            this._favored = value;
+        }
+    }, {
+        key: "allowed",
+        get: function get() {
+            return this._allowed;
+        },
+        set: function set(value) {
+            this._allowed = value;
+        }
+    }, {
+        key: "ramaOutl",
+        get: function get() {
+            return this._ramaOutl;
+        },
+        set: function set(value) {
+            this._ramaOutl = value;
+        }
+    }, {
+        key: "sidechainOutl",
+        get: function get() {
+            return this._sidechainOutl;
+        },
+        set: function set(value) {
+            this._sidechainOutl = value;
+        }
+    }, {
+        key: "clashes",
+        get: function get() {
+            return this._clashes;
+        },
+        set: function set(value) {
+            this._clashes = value;
         }
     }, {
         key: "chainsArray",
