@@ -132,6 +132,10 @@ canvas#rama-canvas {
   margin-right: 5px;
 }
 
+#rama-distance-select {
+  margin-right: 5px;
+}
+
 .rama-contour-radio {
   margin: 5px;
 }

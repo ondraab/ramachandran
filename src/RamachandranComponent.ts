@@ -257,6 +257,18 @@ class RamachandranComponent extends PolymerElement {
             .classed('svg-content-responsive', true)
             .style('overflow', 'visible');
 
+        this.svgContainer.append("svg:defs").append("svg:marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr('refX', 8)
+            .attr("markerWidth", 5)
+            .attr("markerHeight", 5)
+            .attr("orient", "auto")
+            .style('fill', '#aa5519')
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+
         RamachandranComponent.canvasContainer = d3.select('#rama-svg-container')
             .append('canvas')
             .classed('img-responsive', true)
@@ -360,6 +372,17 @@ class RamachandranComponent extends PolymerElement {
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         });
 
+        // if (this.pdbIds.length > 1) {
+        //
+        //     let distanceLines = d3.select('#rama-settings').append('select').attr('id', 'rama-distance-select');
+        //     distanceLines.append('option').attr('value', 1).text('Region change');
+        //     distanceLines.append('option').attr('value', 2).text('All');
+        //
+        //     distanceLines.on('change', () => {
+        //
+        //     });
+        // }
+
         let ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
         ramaForm.append('label').classed('rama-contour-style', true).text('Contour').append('input')
             .attr('type', 'radio')
@@ -417,7 +440,7 @@ class RamachandranComponent extends PolymerElement {
             .style("visibility", "hidden");
 
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('width', '27%').style('margin', '5px 5px 5px 10px');
+            .style('width', '14%').style('margin', '5px 5px 5px 10px');
 
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
             .attr('id', 'rama-info-pdbid');
@@ -676,13 +699,14 @@ class RamachandranComponent extends PolymerElement {
             this.pdbIds.forEach((pdbId: string, index: number) => {
                 if (index < 1)
                     return;
-                let templateResidue = d3.select(`#${residue.idSelector.replace(residue.pdbId, pdbId)}`);
+                let templateResidue: any = d3.select(`#${residue.idSelector.replace(residue.pdbId, pdbId)}`);
                 if (!templateResidue.empty()){
-                    let residue2 = d3.select(`#${residue.idSelector}`).data()[0];
-                    let distance = getDistance(templateResidue.data()[0], residue2);
-                    if (distance > 80)
+                    let residue2: any = d3.select(`#${residue.idSelector}`).data()[0];
+                    if (templateResidue.data()[0].rama != residue2.rama)
+                    // let distance = getDistance(templateResidue.data()[0], residue2);
+                    // if (distance > 80)
                     {
-                        distantResidues.push({templateResidue: residue2, otherResidue: templateResidue.data()[0]});
+                        distantResidues.push({templateResidue: residue2, otherResidue: templateResidue.data()[0], id: `rama-line-${residue2.authorResNum}`});
                     }
                 }
             })
@@ -694,6 +718,9 @@ class RamachandranComponent extends PolymerElement {
             .append('g')
             .classed('dataGroup', true)
             .append('line')
+            .attr('id', (d: any) => {
+                return d.id;
+            })
             .attr('class', 'rama-distance')
             .attr('x1', (d: any) => {
                 return xScale(d.templateResidue.phi);
@@ -707,8 +734,9 @@ class RamachandranComponent extends PolymerElement {
             .attr('x2', (d: any) => {
                 return xScale(d.otherResidue.phi);
             })
-            .attr("stroke-width", 1.5)
+            .attr("stroke-width", 2.5)
             .attr("stroke", "#aa5519")
+            .attr("marker-end", "url(#arrow)")
             .attr('opacity', '0.1')
             .on('mouseover', function (node: any) {
                 onMouseOverResidue(node.templateResidue, ramaContourPlotType, residueColorStyle, tooltip, false);
@@ -727,7 +755,7 @@ class RamachandranComponent extends PolymerElement {
                     .style('height', RamachandranComponent.tooltipHeight)
                     .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
 
-                d3.select(this).attr("stroke-width", 2)
+                d3.select(this).attr("stroke-width", 3)
                     .attr('opacity', '0.8');
 
             })
@@ -740,7 +768,7 @@ class RamachandranComponent extends PolymerElement {
                 tooltip2.transition()
                     .style('opacity', 0);
 
-                d3.select(this).attr("stroke-width", 1.5)
+                d3.select(this).attr("stroke-width", 2.5)
                     .attr('opacity', '0.1');
             });
 
@@ -1722,6 +1750,7 @@ class RamachandranComponent extends PolymerElement {
     static changeOpacity(residuesString: string, makeInvisible: boolean = true) {
         let residues = residuesString.split(',');
         let nodes;
+        let firstRun = true;
         RamachandranComponent.parsedPdb.forEach((pdb: ParsePDB) => {
             let resArray = RamachandranComponent.residuesOnCanvas[pdb.pdbID].slice(0);
 
@@ -1746,31 +1775,35 @@ class RamachandranComponent extends PolymerElement {
                     return (residue.aa != residuesString);
                 });
             }
+            nodes.forEach((residue: Residue) => {
+                if (residue.idSelector == '')
+                    return;
+                let node = d3.select(`#${residue.idSelector}`);
+                if (makeInvisible)
+                    node.style('display', 'none');
+                else
+                    node.style('display', 'block');
+                if (firstRun)
+                {
+                    d3.selectAll('line.rama-distance').each((line: any) => {
+                        if (line.templateResidue.authorResNum == residue.authorResNum) {
+                            if (makeInvisible)
+                                d3.select(`#${line.id}`).style('display', 'none');
+                            else
+                                d3.select(`#${line.id}`).style('display', 'block');
+                        }
+                        // console.log(line);
+                        // if (line.templateResidue.authorResNum == node.data()[0].authorResNum) {
+                        //
+                        // }
+                    });
+                    // console.log();
+                }
+            })
         });
 
 
-        nodes.forEach((residue: Residue) => {
-            if (residue.idSelector == '')
-                return;
-            let node = d3.select(`#${residue.idSelector}`);
-            if (makeInvisible)
-                // node.style('opacity', 0);
-                node.style('display', 'none');
-            else {
-                node.style('display', 'block');
-                // const selection: any = node.node();
-                // if (selection.style.fill == 'rgb(0, 128, 0)'
-                //     || selection.style.fill == 'black'
-                //     || selection.style.fill == 'rgb(0, 0, 0)') {
-                //     selection.style.opacity = 0.15;
-                //
-                // } else if (selection.style.fill == 'rgb(255, 255, 0)') {
-                //     selection.style.opacity = 0.8;
-                // }else {
-                //     selection.style.opacity = 1;
-                // }
-            }
-        })
+
     }
 
 

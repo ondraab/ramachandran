@@ -162,6 +162,16 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .attr('viewBox', `0 0 ${width} ${height}`)
             .classed('svg-content-responsive', true)
             .style('overflow', 'visible');
+        this.svgContainer.append("svg:defs").append("svg:marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr('refX', 8)
+            .attr("markerWidth", 5)
+            .attr("markerHeight", 5)
+            .attr("orient", "auto")
+            .style('fill', '#aa5519')
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
         RamachandranComponent.canvasContainer = d3.select('#rama-svg-container')
             .append('canvas')
             .classed('img-responsive', true)
@@ -248,6 +258,16 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
         });
+        // if (this.pdbIds.length > 1) {
+        //
+        //     let distanceLines = d3.select('#rama-settings').append('select').attr('id', 'rama-distance-select');
+        //     distanceLines.append('option').attr('value', 1).text('Region change');
+        //     distanceLines.append('option').attr('value', 2).text('All');
+        //
+        //     distanceLines.on('change', () => {
+        //
+        //     });
+        // }
         let ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
         ramaForm.append('label').classed('rama-contour-style', true).text('Contour').append('input')
             .attr('type', 'radio')
@@ -298,7 +318,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .style("z-index", "10")
             .style("visibility", "hidden");
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('width', '27%').style('margin', '5px 5px 5px 10px');
+            .style('width', '14%').style('margin', '5px 5px 5px 10px');
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
             .attr('id', 'rama-info-pdbid');
         // .text(this.pdbId.toUpperCase());
@@ -533,9 +553,11 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 let templateResidue = d3.select(`#${residue.idSelector.replace(residue.pdbId, pdbId)}`);
                 if (!templateResidue.empty()) {
                     let residue2 = d3.select(`#${residue.idSelector}`).data()[0];
-                    let distance = getDistance(templateResidue.data()[0], residue2);
-                    if (distance > 80) {
-                        distantResidues.push({ templateResidue: residue2, otherResidue: templateResidue.data()[0] });
+                    if (templateResidue.data()[0].rama != residue2.rama) 
+                    // let distance = getDistance(templateResidue.data()[0], residue2);
+                    // if (distance > 80)
+                    {
+                        distantResidues.push({ templateResidue: residue2, otherResidue: templateResidue.data()[0], id: `rama-line-${residue2.authorResNum}` });
                     }
                 }
             });
@@ -546,6 +568,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .append('g')
             .classed('dataGroup', true)
             .append('line')
+            .attr('id', (d) => {
+            return d.id;
+        })
             .attr('class', 'rama-distance')
             .attr('x1', (d) => {
             return xScale(d.templateResidue.phi);
@@ -559,8 +584,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .attr('x2', (d) => {
             return xScale(d.otherResidue.phi);
         })
-            .attr("stroke-width", 1.5)
+            .attr("stroke-width", 2.5)
             .attr("stroke", "#aa5519")
+            .attr("marker-end", "url(#arrow)")
             .attr('opacity', '0.1')
             .on('mouseover', function (node) {
             onMouseOverResidue(node.templateResidue, ramaContourPlotType, residueColorStyle, tooltip, false);
@@ -577,7 +603,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('top', yScale(node.otherResidue.psi) + 30 + 'px')
                 .style('height', RamachandranComponent.tooltipHeight)
                 .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
-            d3.select(this).attr("stroke-width", 2)
+            d3.select(this).attr("stroke-width", 3)
                 .attr('opacity', '0.8');
         })
             .on('mouseout', function (node) {
@@ -588,7 +614,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('opacity', 0);
             tooltip2.transition()
                 .style('opacity', 0);
-            d3.select(this).attr("stroke-width", 1.5)
+            d3.select(this).attr("stroke-width", 2.5)
                 .attr('opacity', '0.1');
         });
         // .on('click', function(d: any) {
@@ -1489,6 +1515,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
     static changeOpacity(residuesString, makeInvisible = true) {
         let residues = residuesString.split(',');
         let nodes;
+        let firstRun = true;
         RamachandranComponent.parsedPdb.forEach((pdb) => {
             let resArray = RamachandranComponent.residuesOnCanvas[pdb.pdbID].slice(0);
             if (RamachandranComponent.selectedResidues.length != 0) {
@@ -1510,28 +1537,30 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                     return (residue.aa != residuesString);
                 });
             }
-        });
-        nodes.forEach((residue) => {
-            if (residue.idSelector == '')
-                return;
-            let node = d3.select(`#${residue.idSelector}`);
-            if (makeInvisible)
-                // node.style('opacity', 0);
-                node.style('display', 'none');
-            else {
-                node.style('display', 'block');
-                // const selection: any = node.node();
-                // if (selection.style.fill == 'rgb(0, 128, 0)'
-                //     || selection.style.fill == 'black'
-                //     || selection.style.fill == 'rgb(0, 0, 0)') {
-                //     selection.style.opacity = 0.15;
-                //
-                // } else if (selection.style.fill == 'rgb(255, 255, 0)') {
-                //     selection.style.opacity = 0.8;
-                // }else {
-                //     selection.style.opacity = 1;
-                // }
-            }
+            nodes.forEach((residue) => {
+                if (residue.idSelector == '')
+                    return;
+                let node = d3.select(`#${residue.idSelector}`);
+                if (makeInvisible)
+                    node.style('display', 'none');
+                else
+                    node.style('display', 'block');
+                if (firstRun) {
+                    d3.selectAll('line.rama-distance').each((line) => {
+                        if (line.templateResidue.authorResNum == residue.authorResNum) {
+                            if (makeInvisible)
+                                d3.select(`#${line.id}`).style('display', 'none');
+                            else
+                                d3.select(`#${line.id}`).style('display', 'block');
+                        }
+                        // console.log(line);
+                        // if (line.templateResidue.authorResNum == node.data()[0].authorResNum) {
+                        //
+                        // }
+                    });
+                    // console.log();
+                }
+            });
         });
     }
     /**
