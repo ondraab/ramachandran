@@ -63,8 +63,14 @@ class Residue {
     }
     constructor(aa, phi, psi, rama, num, cisPeptide, authorResNum, pdbId) {
         this._aa = aa;
-        this._phi = phi;
-        this._psi = psi;
+        if (phi)
+            this._phi = Math.round(phi * 1e1) / 1e1;
+        else
+            this._phi = phi;
+        if (psi)
+            this._psi = Math.round(psi * 1e1) / 1e1;
+        else
+            this._psi = psi;
         this._rama = rama;
         this._num = num;
         this._cisPeptide = cisPeptide;

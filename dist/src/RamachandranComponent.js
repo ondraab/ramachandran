@@ -48,6 +48,17 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 RamachandranComponent.outliersType[pdbId] = pdb.outlDict;
                 RamachandranComponent.outliersList[pdbId] = [];
                 RamachandranComponent.residuesOnCanvas[pdbId] = [];
+                if (pdbId == '3us0') {
+                    _this2.pdbIds.push('3us0_redo');
+                    var pdbRedo = new parsePdb_1.default(pdbId + "_redo");
+                    var json = require('./3us0.json');
+                    pdbRedo.parse(json[pdbId + "_redo"]);
+                    RamachandranComponent.parsedPdb.push(pdbRedo);
+                    RamachandranComponent.rsrz[pdbId + "_redo"] = pdb.rsrz;
+                    RamachandranComponent.outliersType[pdbId + "_redo"] = pdb.outlDict;
+                    RamachandranComponent.outliersList[pdbId + "_redo"] = [];
+                    RamachandranComponent.residuesOnCanvas[pdbId + "_redo"] = [];
+                }
             });
             RamachandranComponent.hiddenResidues = [];
             RamachandranComponent.selectedResidues = [];
@@ -287,7 +298,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 }
             } else modelsString = this.modelsToShow.toString();
             var tooltip = d3.select("body").append("div").style("position", "absolute").style("z-index", "10").style("visibility", "hidden");
-            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '14%').style('margin', '5px 5px 5px 10px');
+            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '25%').style('margin', '5px 5px 5px 10px');
             entryInfo.append('div').style('display', 'inline-block').style('width', '28%').attr('id', 'rama-info-pdbid');
             // .text(this.pdbId.toUpperCase());
             entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-chains').style('width', '36%').style('text-align', 'right').text(chainsString);

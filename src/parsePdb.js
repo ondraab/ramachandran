@@ -71,83 +71,16 @@ class ParsePDB {
     set clashes(value) {
         this._clashes = value;
     }
-    downloadAndParse() {
+    downloadAndParse(link = 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/') {
         const xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/rama_sidechain_listing/entry/' + this._pdbID, false);
+        xmlHttp.open('GET', `${link}${this.pdbID}`, false);
         xmlHttp.send();
         if (xmlHttp.status !== 200) {
             return;
         }
         else {
             const molecules = JSON.parse(xmlHttp.responseText)[this._pdbID];
-            for (const mol of molecules.molecules) {
-                let chains = [];
-                for (const chain of mol.chains) {
-                    let models = [];
-                    for (const mod of chain.models) {
-                        if (this.chainsArray.indexOf(chain.chain_id) === -1) {
-                            this.chainsArray.push(chain.chain_id);
-                        }
-                        if (this.modelArray.indexOf(mod.model_id) === -1) {
-                            this._modelArray.push(mod.model_id);
-                        }
-                        let residues = [];
-                        for (const resid of mod.residues) {
-                            const residue = new Residue_1.Residue(resid.residue_name, resid.phi, resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number, this._pdbID);
-                            switch (resid.rama) {
-                                case 'OUTLIER':
-                                    this.outliersList.push(residue);
-                                    break;
-                                case 'Favored':
-                                    this.favored++;
-                                    break;
-                                case 'Allowed':
-                                    this.allowed++;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            residues.push(residue);
-                        }
-                        residues.sort((a, b) => {
-                            if (a.num < b.num)
-                                return -1;
-                            if (a.num > b.num)
-                                return 1;
-                            return 0;
-                        });
-                        residues.forEach((value, index) => {
-                            if (index + 1 != residues.length && residues[index + 1].aa == 'PRO') {
-                                value.prePro = true;
-                            }
-                        });
-                        models.push(new Model_1.Model(mod.model_id, residues));
-                    }
-                    models.sort((a, b) => {
-                        if (a.modelId < b.modelId)
-                            return -1;
-                        if (a.modelId > b.modelId)
-                            return 1;
-                        return 0;
-                    });
-                    chains.push(new Chain_1.Chain(chain.chain_id, models));
-                }
-                chains.sort((a, b) => {
-                    if (a.chainId < b.chainId)
-                        return -1;
-                    if (a.chainId > b.chainId)
-                        return 1;
-                    return 0;
-                });
-                this._molecules.push(new Molecule_1.Molecule(mol.entity_id, chains, this._pdbID));
-            }
-            this._molecules.sort((a, b) => {
-                if (a.entityId < b.entityId)
-                    return -1;
-                if (a.entityId > b.entityId)
-                    return 1;
-                return 0;
-            });
+            this.parse(molecules);
             xmlHttp.open('GET', 'https://www.ebi.ac.uk/pdbe/api/validation/residuewise_outlier_summary/entry/' + this._pdbID, false);
             xmlHttp.send();
             const mols = JSON.parse(xmlHttp.responseText)[this._pdbID];
@@ -172,6 +105,76 @@ class ParsePDB {
                 }
             }
         }
+    }
+    parse(molecules) {
+        for (const mol of molecules.molecules) {
+            let chains = [];
+            for (const chain of mol.chains) {
+                let models = [];
+                for (const mod of chain.models) {
+                    if (this.chainsArray.indexOf(chain.chain_id) === -1) {
+                        this.chainsArray.push(chain.chain_id);
+                    }
+                    if (this.modelArray.indexOf(mod.model_id) === -1) {
+                        this._modelArray.push(mod.model_id);
+                    }
+                    let residues = [];
+                    for (const resid of mod.residues) {
+                        const residue = new Residue_1.Residue(resid.residue_name, resid.phi, resid.psi, resid.rama, resid.residue_number, resid.cis_peptide, resid.author_residue_number, this._pdbID);
+                        switch (resid.rama) {
+                            case 'OUTLIER':
+                                this.outliersList.push(residue);
+                                break;
+                            case 'Favored':
+                                this.favored++;
+                                break;
+                            case 'Allowed':
+                                this.allowed++;
+                                break;
+                            default:
+                                break;
+                        }
+                        residues.push(residue);
+                    }
+                    residues.sort((a, b) => {
+                        if (a.num < b.num)
+                            return -1;
+                        if (a.num > b.num)
+                            return 1;
+                        return 0;
+                    });
+                    residues.forEach((value, index) => {
+                        if (index + 1 != residues.length && residues[index + 1].aa == 'PRO') {
+                            value.prePro = true;
+                        }
+                    });
+                    models.push(new Model_1.Model(mod.model_id, residues));
+                }
+                models.sort((a, b) => {
+                    if (a.modelId < b.modelId)
+                        return -1;
+                    if (a.modelId > b.modelId)
+                        return 1;
+                    return 0;
+                });
+                chains.push(new Chain_1.Chain(chain.chain_id, models));
+            }
+            chains.sort((a, b) => {
+                if (a.chainId < b.chainId)
+                    return -1;
+                if (a.chainId > b.chainId)
+                    return 1;
+                return 0;
+            });
+            this._molecules.push(new Molecule_1.Molecule(mol.entity_id, chains, this._pdbID));
+        }
+        this._molecules.sort((a, b) => {
+            if (a.entityId < b.entityId)
+                return -1;
+            if (a.entityId > b.entityId)
+                return 1;
+            return 0;
+        });
     }
     get chainsArray() {
         return this._chainsArray;

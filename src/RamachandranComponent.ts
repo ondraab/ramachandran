@@ -9,6 +9,7 @@ import {Residue} from "./Residue";
 import {Molecule} from "./Molecule";
 import {Chain} from "./Chain";
 import {Model} from "./Model";
+declare var require: any;
 
 class RamachandranComponent extends PolymerElement {
     // containers
@@ -110,6 +111,18 @@ class RamachandranComponent extends PolymerElement {
             RamachandranComponent.outliersType[pdbId] = pdb.outlDict;
             RamachandranComponent.outliersList[pdbId] = [];
             RamachandranComponent.residuesOnCanvas[pdbId] = [];
+            if (pdbId == '3us0')
+            {
+                this.pdbIds.push('3us0_redo');
+                let pdbRedo = new ParsePDB(`${pdbId}_redo`);
+                let json = require('./3us0.json');
+                pdbRedo.parse(json[`${pdbId}_redo`]);
+                RamachandranComponent.parsedPdb.push(pdbRedo);
+                RamachandranComponent.rsrz[`${pdbId}_redo`] = pdb.rsrz;
+                RamachandranComponent.outliersType[`${pdbId}_redo`] = pdb.outlDict;
+                RamachandranComponent.outliersList[`${pdbId}_redo`] = [];
+                RamachandranComponent.residuesOnCanvas[`${pdbId}_redo`] = [];
+            }
         });
 
         RamachandranComponent.hiddenResidues = [];
@@ -160,7 +173,6 @@ class RamachandranComponent extends PolymerElement {
             const pdb = new ParsePDB(pdbId);
             pdb.downloadAndParse();
         });
-
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShow);
 
         // d3.select('#rama-info-pdbid').text(this.pdbId.toUpperCase());
@@ -440,7 +452,7 @@ class RamachandranComponent extends PolymerElement {
             .style("visibility", "hidden");
 
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('width', '14%').style('margin', '5px 5px 5px 10px');
+            .style('width', '25%').style('margin', '5px 5px 5px 10px');
 
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
             .attr('id', 'rama-info-pdbid');
@@ -711,7 +723,7 @@ class RamachandranComponent extends PolymerElement {
                 }
             })
         });
-        
+
         svgContainer.selectAll('line.rama-distance')
             .data(distantResidues)
             .enter()

@@ -50,6 +50,17 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             RamachandranComponent.outliersType[pdbId] = pdb.outlDict;
             RamachandranComponent.outliersList[pdbId] = [];
             RamachandranComponent.residuesOnCanvas[pdbId] = [];
+            if (pdbId == '3us0') {
+                this.pdbIds.push('3us0_redo');
+                let pdbRedo = new parsePdb_1.default(`${pdbId}_redo`);
+                let json = require('./3us0.json');
+                pdbRedo.parse(json[`${pdbId}_redo`]);
+                RamachandranComponent.parsedPdb.push(pdbRedo);
+                RamachandranComponent.rsrz[`${pdbId}_redo`] = pdb.rsrz;
+                RamachandranComponent.outliersType[`${pdbId}_redo`] = pdb.outlDict;
+                RamachandranComponent.outliersList[`${pdbId}_redo`] = [];
+                RamachandranComponent.residuesOnCanvas[`${pdbId}_redo`] = [];
+            }
         });
         RamachandranComponent.hiddenResidues = [];
         RamachandranComponent.selectedResidues = [];
@@ -318,7 +329,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .style("z-index", "10")
             .style("visibility", "hidden");
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('width', '14%').style('margin', '5px 5px 5px 10px');
+            .style('width', '25%').style('margin', '5px 5px 5px 10px');
         entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
             .attr('id', 'rama-info-pdbid');
         // .text(this.pdbId.toUpperCase());
