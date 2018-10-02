@@ -4,6 +4,7 @@ import {cisPro, generalContour, gly, ileVal, prePro, transPro} from "../contours
 import {lineCisPro, lineGeneralContour, lineGly, lineIleVal, linePrePro, lineTransPro} from "../contours/LineContours";
 import 'bootstrap/dist/css/bootstrap.css';
 import '../public/index.css';
+import '../public/hint.min.css'
 import ParsePDB, {Dictionary} from "./parsePdb";
 import {Residue} from "./Residue";
 import {Molecule} from "./Molecule";
@@ -331,16 +332,19 @@ class RamachandranComponent extends PolymerElement {
             .attr('y', height + 35)
             .style('text-anchor', 'middle')
             .style('fill', '#000')
-            .text('\u03A6');
+            .text('\u03C6');
 
         // psi label
         this.svgContainer.append('text')
-            .attr('x',  0 - (height / 2))
-            .attr('y', -35)
+            // .attr('x',  0 - (height / 2))
+            // .attr('y', -0)
+            .attr('x', '-35')
+            .attr('y', height/2)
             .style('text-anchor', 'middle')
             .style('fill', '#000')
-            .attr('transform', 'rotate(-90)')
-            .text('\u03A8');
+            // .attr('transform', 'rotate(-90)')
+            .text('\u03C8');
+
         //
         // // outliers headline
         // d3.select('#rama-root').append('div')
@@ -396,14 +400,20 @@ class RamachandranComponent extends PolymerElement {
         // }
 
         let ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
-        ramaForm.append('label').classed('rama-contour-style', true).text('Contour').append('input')
+        ramaForm.append('label').classed('rama-contour-style', true).text('Contour')
+            .attr('class', 'hint--top')
+            .attr('data-hint', 'Regions are displayed using lines.')
+            .append('input')
             .attr('type', 'radio')
             .attr('name', 'contour-style')
             .attr('value', 1)
             .attr('checked', true)
             .classed('rama-contour-radio', true);
 
-        ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map').append('input')
+        ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map')
+            .attr('class', 'hint--top')
+            .attr('data-hint', 'Regions are displayed heat map.')
+            .append('input')
             .attr('type', 'radio')
             .attr('name', 'contour-style')
             .attr('value', 2)
@@ -444,51 +454,19 @@ class RamachandranComponent extends PolymerElement {
         } else
             modelsString = this.modelsToShow.toString();
 
-
-        let tooltip = d3.select("body")
-            .append("div")
-            .style("position", "absolute")
-            .style("z-index", "10")
-            .style("visibility", "hidden");
-
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('width', '25%').style('margin', '5px 5px 5px 10px');
-
-        entryInfo.append('div').style('display', 'inline-block').style('width', '28%')
-            .attr('id', 'rama-info-pdbid');
-            // .text(this.pdbId.toUpperCase());
+            .style('width', '34%').style('margin', '5px 5px 5px 10px');
 
         entryInfo.append('div').style('display', 'inline-block')
-            .attr('id', 'rama-info-chains').style('width', '36%')
-            .style('text-align','right').text(chainsString);
-        d3.select('#rama-info-chains').on("mouseover", () =>{
-            d3.select('#rama-info-chains').style('cursor', 'default');
-            return tooltip.style("visibility", "visible")
-                .style('opacity', .95)
-                .text(this.chainsToShow)
-                .style('left', (d3.event.pageX + 10) + 'px')
-                .style('top', (d3.event.pageY - 48) + 'px')
-                .style('background', 'gray')
-                .style('padding', '2px 5px 2px 5px')
-                .transition().duration(50);
-        })
-            .on("mouseout", () =>{return tooltip.style("visibility", "hidden");});
+            .attr('id', 'rama-info-chains').style('width', '50%')
+            .style('text-align','center').text(chainsString)
+            .attr('class', 'hint--top')
+            .attr('data-hint', this.chainsToShow);
 
         entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models')
-            .style('width', '36%').style('text-align','right').text(modelsString);
+            .style('width', '50%').style('text-align','center').text(modelsString)
+            .attr('class', 'hint--top').attr('data-hint', this.modelsToShow);
 
-        d3.select('#rama-info-models').on("mouseover", () =>{
-            d3.select('#rama-info-models').style('cursor', 'default');
-            return tooltip.style("visibility", "visible")
-                .text(this.modelsToShow.toString())
-                .style('opacity', .95)
-                .style('left', (d3.event.pageX + 10) + 'px')
-                .style('top', (d3.event.pageY - 48) + 'px')
-                .style('background', 'gray')
-                .style('padding', '2px 5px 2px 5px')
-                .transition().duration(50);
-        })
-            .on("mouseout", () =>{return tooltip.style("visibility", "hidden");});
 
         this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
         RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
@@ -1077,9 +1055,16 @@ class RamachandranComponent extends PolymerElement {
 
         switch (this.residueColorStyle){
             case 1:
-                d3.select('.rama-sum-table-headline').append('th').text('Preferred regions');
-                d3.select('.rama-sum-table-headline').append('th').text('Allowed regions');
-                d3.select('.rama-sum-table-headline').append('th').text('Outliers');
+                d3.select('.rama-sum-table-headline').append('th').text('Preferred regions')
+                    .attr('class', 'hint--top')
+                    .attr('data-hint', 'Regions with the most favorable combinations of \u03C6 ' +
+                        'and \u03C8 combination.');
+                d3.select('.rama-sum-table-headline').append('th').text('Allowed regions')
+                    .attr('class', 'hint--top')
+                    .attr('data-hint', 'Regions with allowed combinations of \u03C6 and \u03C8 combination.');
+                d3.select('.rama-sum-table-headline').append('th').text('Outliers')
+                    .attr('class', 'hint--top')
+                    .attr('data-hint', 'Regions with disallowed combinations of \u03C6 and \u03C8 combination.');
                 break;
             case 2:
                 d3.select('.rama-sum-table-headline').append('th').text('Ramachandran outliers');
@@ -1474,7 +1459,7 @@ class RamachandranComponent extends PolymerElement {
      */
     static tooltipText(residue: Residue) {
         // language=HTML
-        return  `<b>${residue.pdbId.toUpperCase()}<br>${residue.chainId} ${residue.authorResNum} ${residue.aa}</b><br/>\u03A6: ${residue.phi}<br/>\u03A8: ${residue.psi}`;
+        return  `<b>${residue.pdbId.toUpperCase()}<br>${residue.chainId} ${residue.authorResNum} ${residue.aa}</b><br/>\u03C6: ${residue.phi}<br/>\u03C8: ${residue.psi}`;
     }
 
 

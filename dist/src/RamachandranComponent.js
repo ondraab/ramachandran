@@ -17,6 +17,7 @@ var HeatMapContours_1 = require("../contours/HeatMapContours");
 var LineContours_1 = require("../contours/LineContours");
 require("bootstrap/dist/css/bootstrap.css");
 require("../public/index.css");
+require("../public/hint.min.css");
 var parsePdb_1 = require("./parsePdb");
 
 var RamachandranComponent = function (_polymer_element_js_) {
@@ -178,9 +179,14 @@ var RamachandranComponent = function (_polymer_element_js_) {
             this.svgContainer.append('g').attr('class', 'rama-grid').call(makeYGridlines().tickSize(height));
             // axis labels
             // phi label
-            this.svgContainer.append('text').attr('x', width / 2).attr('y', height + 35).style('text-anchor', 'middle').style('fill', '#000').text("\u03A6");
+            this.svgContainer.append('text').attr('x', width / 2).attr('y', height + 35).style('text-anchor', 'middle').style('fill', '#000').text("\u03C6");
             // psi label
-            this.svgContainer.append('text').attr('x', 0 - height / 2).attr('y', -35).style('text-anchor', 'middle').style('fill', '#000').attr('transform', 'rotate(-90)').text("\u03A8");
+            this.svgContainer.append('text')
+            // .attr('x',  0 - (height / 2))
+            // .attr('y', -0)
+            .attr('x', '-35').attr('y', height / 2).style('text-anchor', 'middle').style('fill', '#000')
+            // .attr('transform', 'rotate(-90)')
+            .text("\u03C8");
             //
             // // outliers headline
             // d3.select('#rama-root').append('div')
@@ -227,8 +233,8 @@ var RamachandranComponent = function (_polymer_element_js_) {
             //     });
             // }
             var ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
-            ramaForm.append('label').classed('rama-contour-style', true).text('Contour').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 1).attr('checked', true).classed('rama-contour-radio', true);
-            ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 2).classed('rama-contour-radio', true);
+            ramaForm.append('label').classed('rama-contour-style', true).text('Contour').attr('class', 'hint--top').attr('data-hint', 'Regions are displayed using lines.').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 1).attr('checked', true).classed('rama-contour-radio', true);
+            ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map').attr('class', 'hint--top').attr('data-hint', 'Regions are displayed heat map.').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 2).classed('rama-contour-radio', true);
             ramaForm.on('change', function () {
                 RamachandranComponent.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
                 RamachandranComponent.baseContours(_this3.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
@@ -297,24 +303,9 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     }
                 }
             } else modelsString = this.modelsToShow.toString();
-            var tooltip = d3.select("body").append("div").style("position", "absolute").style("z-index", "10").style("visibility", "hidden");
-            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '25%').style('margin', '5px 5px 5px 10px');
-            entryInfo.append('div').style('display', 'inline-block').style('width', '28%').attr('id', 'rama-info-pdbid');
-            // .text(this.pdbId.toUpperCase());
-            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-chains').style('width', '36%').style('text-align', 'right').text(chainsString);
-            d3.select('#rama-info-chains').on("mouseover", function () {
-                d3.select('#rama-info-chains').style('cursor', 'default');
-                return tooltip.style("visibility", "visible").style('opacity', .95).text(_this3.chainsToShow).style('left', d3.event.pageX + 10 + 'px').style('top', d3.event.pageY - 48 + 'px').style('background', 'gray').style('padding', '2px 5px 2px 5px').transition().duration(50);
-            }).on("mouseout", function () {
-                return tooltip.style("visibility", "hidden");
-            });
-            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models').style('width', '36%').style('text-align', 'right').text(modelsString);
-            d3.select('#rama-info-models').on("mouseover", function () {
-                d3.select('#rama-info-models').style('cursor', 'default');
-                return tooltip.style("visibility", "visible").text(_this3.modelsToShow.toString()).style('opacity', .95).style('left', d3.event.pageX + 10 + 'px').style('top', d3.event.pageY - 48 + 'px').style('background', 'gray').style('padding', '2px 5px 2px 5px').transition().duration(50);
-            }).on("mouseout", function () {
-                return tooltip.style("visibility", "hidden");
-            });
+            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '34%').style('margin', '5px 5px 5px 10px');
+            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-chains').style('width', '50%').style('text-align', 'center').text(chainsString).attr('class', 'hint--top').attr('data-hint', this.chainsToShow);
+            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models').style('width', '50%').style('text-align', 'center').text(modelsString).attr('class', 'hint--top').attr('data-hint', this.modelsToShow);
             this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
             this.addEventListeners();
@@ -751,9 +742,9 @@ var RamachandranComponent = function (_polymer_element_js_) {
             d3.select('#rama-sum').append('table').classed('rama-sum-table', true).append('tr').classed('rama-sum-table-headline', true).append('th').text('PDB');
             switch (this.residueColorStyle) {
                 case 1:
-                    d3.select('.rama-sum-table-headline').append('th').text('Preferred regions');
-                    d3.select('.rama-sum-table-headline').append('th').text('Allowed regions');
-                    d3.select('.rama-sum-table-headline').append('th').text('Outliers');
+                    d3.select('.rama-sum-table-headline').append('th').text('Preferred regions').attr('class', 'hint--top').attr('data-hint', "Regions with the most favorable combinations of \u03C6 " + "and \u03C8 combination.");
+                    d3.select('.rama-sum-table-headline').append('th').text('Allowed regions').attr('class', 'hint--top').attr('data-hint', "Regions with allowed combinations of \u03C6 and \u03C8 combination.");
+                    d3.select('.rama-sum-table-headline').append('th').text('Outliers').attr('class', 'hint--top').attr('data-hint', "Regions with disallowed combinations of \u03C6 and \u03C8 combination.");
                     break;
                 case 2:
                     d3.select('.rama-sum-table-headline').append('th').text('Ramachandran outliers');
@@ -1485,7 +1476,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
         key: "tooltipText",
         value: function tooltipText(residue) {
             // language=HTML
-            return "<b>" + residue.pdbId.toUpperCase() + "<br>" + residue.chainId + " " + residue.authorResNum + " " + residue.aa + "</b><br/>\u03A6: " + residue.phi + "<br/>\u03A8: " + residue.psi;
+            return "<b>" + residue.pdbId.toUpperCase() + "<br>" + residue.chainId + " " + residue.authorResNum + " " + residue.aa + "</b><br/>\u03C6: " + residue.phi + "<br/>\u03C8: " + residue.psi;
         }
         /**
          * change object size on hover
