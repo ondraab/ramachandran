@@ -201,7 +201,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
             d3.selectAll('g.rama-grid g.tick text').remove();
             d3.select('#rama-svg-container').append('div').attr('id', 'rama-sum').attr('class', 'rama-set-cl');
             d3.select('#rama-svg-container').append('div').attr('id', 'rama-settings').attr('class', 'rama-set-cl');
-            var colorSelect = d3.select('#rama-settings').append('select').attr('id', 'rama-coloring');
+            var colorSelect = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '15%').style('margin-right', '8px').append('select').attr('id', 'rama-coloring').attr('class', 'custom-select');
             colorSelect.append('option').attr('value', 1).text('Default');
             colorSelect.append('option').attr('value', 2).text('Quality');
             colorSelect.append('option').attr('value', 3).text('RSRZ');
@@ -210,7 +210,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                 _this3.changeResiduesColors(_this3.residueColorStyle);
                 _this3.addSummaryInfo();
             });
-            var plotTypeSelect = d3.select('#rama-settings').append('select').attr('id', 'rama-plot-type');
+            var plotTypeSelect = d3.select('#rama-settings').append('div').style('margin-right', '30px').style('display', 'inline-block').style('width', '28%').append('select').attr('id', 'rama-plot-type').attr('class', 'custom-select');
             plotTypeSelect.append('option').attr('value', 1).text('General case');
             plotTypeSelect.append('option').attr('value', 2).text('Isoleucine and valine');
             plotTypeSelect.append('option').attr('value', 3).text('Pre-proline');
@@ -232,9 +232,12 @@ var RamachandranComponent = function (_polymer_element_js_) {
             //
             //     });
             // }
-            var ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style');
-            ramaForm.append('label').classed('rama-contour-style', true).text('Contour').attr('class', 'hint--top').attr('data-hint', 'Regions are displayed using lines.').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 1).attr('checked', true).classed('rama-contour-radio', true);
-            ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map').attr('class', 'hint--top').attr('data-hint', 'Regions are displayed heat map.').append('input').attr('type', 'radio').attr('name', 'contour-style').attr('value', 2).classed('rama-contour-radio', true);
+            var ramaForm = d3.select('#rama-settings').append('form').attr('id', 'rama-contour-style').style('position', 'absolute').style('margin', '5px');
+            ramaForm.append('input').classed('form-check-input', true).attr('type', 'radio').attr('name', 'contour-style').attr('value', 1).attr('checked', true).classed('rama-contour-radio', true);
+            ramaForm.append('label').classed('rama-contour-style', true).text('Contour').attr('class', 'hint--right').attr('data-hint', 'Regions are displayed using lines.').style('margin-bottom', '0');
+            ramaForm.append('br');
+            ramaForm.append('input').classed('form-check-input', true).attr('type', 'radio').attr('name', 'contour-style').attr('value', 2).classed('rama-contour-radio', true);
+            ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map').attr('class', 'hint--right').attr('data-hint', 'Regions are displayed heat map.').style('margin-bottom', '0');
             ramaForm.on('change', function () {
                 RamachandranComponent.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
                 RamachandranComponent.baseContours(_this3.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
@@ -303,9 +306,13 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     }
                 }
             } else modelsString = this.modelsToShow.toString();
-            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('width', '34%').style('margin', '5px 5px 5px 10px');
-            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-chains').style('width', '50%').style('text-align', 'center').text(chainsString).attr('class', 'hint--top').attr('data-hint', this.chainsToShow);
-            entryInfo.append('div').style('display', 'inline-block').attr('id', 'rama-info-models').style('width', '50%').style('text-align', 'center').text(modelsString).attr('class', 'hint--top').attr('data-hint', this.modelsToShow);
+            var entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block').style('position', 'absolute').style('width', '25%').style('margin', '5px 5px 5px 95px');
+            var chainsInfo = entryInfo.append('div');
+            chainsInfo.attr('id', 'rama-info-chains').append('b').text('Chains: ').style('margin-right', '5px');
+            chainsInfo.append('text').text(chainsString).attr('class', 'hint--top').attr('data-hint', this.chainsToShow);
+            var modelsInfo = entryInfo.append('div');
+            modelsInfo.append('b').text('Models: ');
+            modelsInfo.append('text').text(modelsString).style('text-align', 'center').attr('class', 'hint--top').attr('data-hint', this.modelsToShow);
             this.updateChart(this.chainsToShow, this.ramaContourPlotType, this.modelsToShowNumbers);
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
             this.addEventListeners();

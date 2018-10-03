@@ -131,16 +131,8 @@ canvas#rama-canvas {
   margin: 5px;
 }
 
-#rama-plot-type {
-  margin-right: 5px;
-}
-
 #rama-distance-select {
   margin-right: 5px;
-}
-
-.rama-contour-radio {
-  margin: 5px;
 }
 
 .svg-container {
