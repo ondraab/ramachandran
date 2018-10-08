@@ -1,3 +1,6 @@
+* {
+  cursor: default;
+}
 body.rama-body {
   margin: 0;
   padding: 0;
@@ -128,16 +131,8 @@ canvas#rama-canvas {
   margin: 5px;
 }
 
-#rama-plot-type {
-  margin-right: 5px;
-}
-
 #rama-distance-select {
   margin-right: 5px;
-}
-
-.rama-contour-radio {
-  margin: 5px;
 }
 
 .svg-container {
@@ -229,7 +224,12 @@ button.dropdown-toggle {
     width: 25%;
     text-align: right;
   }
-  /*rama-type-dropdown {*/
-    /*max-width: 30%;*/
-  /*}*/
+  .hint--multiline:after {
+    white-space: pre;
+    max-width: 320px;
+  }
+  .hint--multiline2:after {
+    white-space: pre;
+    max-width: 450px;
+  }
 }
