@@ -5,7 +5,7 @@ const polymer_element_js_1 = require("@polymer/polymer/polymer-element.js");
 const HeatMapContours_1 = require("../contours/HeatMapContours");
 const LineContours_1 = require("../contours/LineContours");
 require("bootstrap/dist/css/bootstrap.css");
-require("../public/index.css");
+require("../public/ramachandran_style.css");
 require("../public/hint.min.css");
 const parsePdb_1 = require("./parsePdb");
 class RamachandranComponent extends polymer_element_js_1.PolymerElement {

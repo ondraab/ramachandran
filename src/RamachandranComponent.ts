@@ -3,7 +3,7 @@ import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {cisPro, generalContour, gly, ileVal, prePro, transPro} from "../contours/HeatMapContours";
 import {lineCisPro, lineGeneralContour, lineGly, lineIleVal, linePrePro, lineTransPro} from "../contours/LineContours";
 import 'bootstrap/dist/css/bootstrap.css';
-import '../public/index.css';
+import '../public/ramachandran_style.css';
 import '../public/hint.min.css'
 import ParsePDB, {Dictionary} from "./parsePdb";
 import {Residue} from "./Residue";

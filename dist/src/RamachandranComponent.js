@@ -16,7 +16,7 @@ var polymer_element_js_1 = require("@polymer/polymer/polymer-element.js");
 var HeatMapContours_1 = require("../contours/HeatMapContours");
 var LineContours_1 = require("../contours/LineContours");
 require("bootstrap/dist/css/bootstrap.css");
-require("../public/index.css");
+require("../public/ramachandran_style.css");
 require("../public/hint.min.css");
 var parsePdb_1 = require("./parsePdb");
 

@@ -32,6 +32,9 @@ module.exports = {
         compress: true,
         port: 9000,
         historyApiFallback: true
+    },
+    optimization: {
+        minimizer: [new UglifyJsPlugin()]
     }
 };
 //# sourceMappingURL=webpack.config.prod.js.map
