@@ -567,6 +567,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                     selectNode(node);
             });
         }
+        RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num;
         addResiduesToCanvas(templatePdbResidues);
         let otherResidues = [];
         RamachandranComponent.parsedPdb.forEach((pdb, index) => {
@@ -790,6 +791,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         function getResidueNode(event) {
             if (typeof event.eventData.chainId == 'undefined')
                 return null;
+            console.log(`path#${event.eventData.residueName}-
+            ${event.eventData.chainId}-
+            ${event.eventData.entityId}-
+            ${event.eventData.residueNumber + RamachandranComponent.resNumDifference}`);
             return d3.select('path#' +
                 event.eventData.residueName + '-' +
                 event.eventData.chainId + '-' +

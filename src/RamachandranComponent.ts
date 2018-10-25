@@ -66,6 +66,8 @@ class RamachandranComponent extends PolymerElement {
 
     private static symbolTypes;
 
+    private static resNumDifference;
+
 
     static get properties() {
         return {
@@ -255,6 +257,7 @@ class RamachandranComponent extends PolymerElement {
         function makeXGridlines() {
             return d3.axisTop(xScale);
         }
+
         //
         this.svgContainer = d3.select('ramachandran-component').append('div')
             .attr('id', 'rama-svg-container')
@@ -714,6 +717,7 @@ class RamachandranComponent extends PolymerElement {
                 })
         }
 
+        RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num;
         addResiduesToCanvas(templatePdbResidues);
 
         let otherResidues = [];
@@ -923,15 +927,18 @@ class RamachandranComponent extends PolymerElement {
          */
         function unHighlightObject(event: any) {
             if (typeof event.eventData != 'undefined') {
-                if (RamachandranComponent.highlightedResidues.indexOf(getResidueNode(event)) == -1) {
+                let onMouseNode = getResidueNode(event);
+                if (RamachandranComponent.highlightedResidues.indexOf(onMouseNode) == -1) {
+                    if (onMouseNode && onMouseNode.classed('clicked-res'))
+                        return;
                     d3.select('.selected-res')
                         .classed('selected-res', false)
                         .attr('d', (residue: Residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
                         .style('fill', (residue: Residue) => fillColorFunction(residue, residueColorStyle))
-                        .style('display', 'block');
-                    // .style('opacity', (d) => {
-                    //     return RamachandranComponent.computeOpacity(fillColorFunction(d, drawingType, outliersType, rsrz))
-                    // });
+                        .style('display', 'block')
+                    .style('opacity', (residue: Residue) => {
+                        return RamachandranComponent.computeOpacity(residue.residueColor)
+                    });
                 }
             }
         }
@@ -942,22 +949,37 @@ class RamachandranComponent extends PolymerElement {
          */
         function onClick(event: any) {
             const res = getResidueNode(event);
+            if (event.type =='PDB.litemol.click') {
+                const node = getResidueNode(event);
+                const highlightedNode = d3.select('.clicked-res');
+                 if (node) {
+                    node.attr('d', (residue: Residue) => RamachandranComponent.changeObjectSize(residue, false))
+                        .classed('clicked-res', true)
+                        .style('fill', 'magenta')
+                        .style('opacity', '1');
+                } else if (highlightedNode) {
+                     highlightedNode.classed('clicked-res', false).attr('d', (residue: Residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
+                         .style('fill', (residue: Residue) => fillColorFunction(residue, residueColorStyle))
+                         .style('display', 'block')
+                         .style('opacity', (residue: Residue) => {
+                             return RamachandranComponent.computeOpacity(residue.residueColor)
+                         });
+                 }
+
+            }
             if (RamachandranComponent.highlightedResidues.length != 0) {
                 RamachandranComponent.highlightedResidues.forEach((node: any) => {
                     node.attr('d', (residue: Residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
                         .style('fill', (residue: Residue) => fillColorFunction(residue, residueColorStyle))
-                        .style('display', 'block');
-                    // .style('opacity', (d) => {
-                    //     return RamachandranComponent.computeOpacity(fillColorFunction(d, drawingType, outliersType, rsrz))
-                    // });
+                        .style('display', 'block')
+                        .style('opacity', (residue: Residue) => {
+                            return RamachandranComponent.computeOpacity(residue.residueColor)
+                        });
                 });
                 RamachandranComponent.highlightedResidues.pop();
             }
             RamachandranComponent.highlightedResidues.push(res);
-            getResidueNode(event).attr('d', (residue: Residue) => RamachandranComponent.changeObjectSize(residue, false))
-                .classed('selected-res', false)
-                .style('fill', 'magenta')
-                .style('opacity', '1');
+
         }
 
 
@@ -967,13 +989,11 @@ class RamachandranComponent extends PolymerElement {
          * @returns {Selection}
          */
         function getResidueNode(event: any) {
-            if (typeof event.eventData.chainId == 'undefined')
+            if (event.eventData.residueNumber == 0 || typeof event.eventData.chainId == 'undefined')
                 return null;
-            return d3.select('path#' +
-                event.eventData.residueName + '-' +
-                event.eventData.chainId + '-' +
-                event.eventData.entityId + '-' +
-                event.eventData.residueNumber);
+            const selectedNode = d3.select(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber+RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
+            if (selectedNode)
+                return selectedNode;
         }
 
 
@@ -984,6 +1004,8 @@ class RamachandranComponent extends PolymerElement {
         function highLightObject(event: any) {
             let res = getResidueNode(event);
             if (res) {
+                if (res.classed('clicked-res'))
+                    return;
                 res.attr('d', (d: any) => RamachandranComponent.changeObjectSize(d, false))
                     .classed('selected-res', true)
                     .style('fill', 'yellow')

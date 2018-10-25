@@ -496,6 +496,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
                     if (node == RamachandranComponent.selectedNode) deselectNode(node);else selectNode(node);
                 });
             }
+            RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num;
             addResiduesToCanvas(templatePdbResidues);
             var otherResidues = [];
             RamachandranComponent.parsedPdb.forEach(function (pdb, index) {
@@ -649,6 +650,7 @@ var RamachandranComponent = function (_polymer_element_js_) {
              */
             function getResidueNode(event) {
                 if (typeof event.eventData.chainId == 'undefined') return null;
+                console.log("path#" + event.eventData.residueName + "-\n            " + event.eventData.chainId + "-\n            " + event.eventData.entityId + "-\n            " + (event.eventData.residueNumber + RamachandranComponent.resNumDifference));
                 return d3.select('path#' + event.eventData.residueName + '-' + event.eventData.chainId + '-' + event.eventData.entityId + '-' + event.eventData.residueNumber);
             }
             /**
