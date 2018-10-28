@@ -184,6 +184,34 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             .style('fill', '#aa5519')
             .append("svg:path")
             .attr("d", "M0,-5L10,0L0,5");
+        const overlayHelp = d3.select('#rama-svg-container').append('div').attr('id', 'rama-overlay-help')
+            .style('width', `${width}px`).style('height', `${height}px`)
+            .append('div').style('color', '#DCECD7').style('padding', '5px').html(`
+                <h1>Ramachandran component</h1>
+                <p>This component can be used for analysing proteis. It is interactiver Ramachandran plot</p>
+                <h4>Coloring of residues</h4>
+                <p>Default: residues are colored by regions. There are 3 types of regions: Favored, Allowed and <b>Outlier</b>.
+                The most interesting are outliers. It says, that the combination of \u03C6 and \u03C8 angles has got low probability.
+                Outlier residues are colored red, other grey.
+                </p>
+                <p>Quality: residues are colored according to number of problems detected on residue. 
+                The problems may be classified as clashes, sidechain outliers and RSRZ outliers.
+                If there is not any problem the residues are colored green, residues with one problem are colored yellow, 
+                residues with two problems are colored orange and residue with all three types of problems are colored red. </p>
+                <p>RSRZ: Residues are colored red, if they are classified as RSRZ outlier. The RSRZ is a normalisation 
+                of real-space R-value (RSR) specific to a residue type and a resolution bin. 
+                A residue is considered an RSRZ outlier if its RSRZ value is greater than 2.</p>
+                <h4>Type of contours:</h4>
+                <p>Contours are computed from database Top8000. It shows the probability of dihedral angles for different types of aminoacids.</p>
+            `);
+        d3.select('#rama-svg-container').append('a').attr('id', 'rama-a-help').text('?').style('margin', '5px')
+            .style('position', 'absolute').attr('href', '#');
+        d3.select('#rama-a-help').on('click', () => {
+            d3.select('#rama-overlay-help').transition().duration(300).style('display', 'block');
+        });
+        d3.select('#rama-overlay-help').on('click', () => {
+            d3.select('#rama-overlay-help').transition().duration(300).style('display', 'none');
+        });
         RamachandranComponent.canvasContainer = d3.select('#rama-svg-container')
             .append('canvas')
             .classed('img-responsive', true)
@@ -297,35 +325,68 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         //
         //     });
         // }
-        let ramaForm = d3.select('#rama-settings').append('form')
-            .attr('id', 'rama-contour-style')
-            .style('position', 'absolute')
-            .style('margin', '5px');
-        ramaForm.append('input')
-            .classed('form-check-input', true)
-            .attr('type', 'radio')
-            .attr('name', 'contour-style')
-            .attr('value', 1)
-            .attr('checked', true)
-            .classed('rama-contour-radio', true);
-        ramaForm.append('label').classed('rama-contour-style', true).text('Contour')
-            .attr('class', 'hint--right')
-            .attr('data-hint', 'Regions are displayed using lines.')
-            .style('margin-bottom', '0');
-        ramaForm.append('br');
-        ramaForm.append('input')
-            .classed('form-check-input', true)
-            .attr('type', 'radio')
-            .attr('name', 'contour-style')
-            .attr('value', 2)
-            .classed('rama-contour-radio', true);
-        ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map')
-            .attr('class', 'hint--right')
-            .attr('data-hint', 'Regions are displayed heat map.')
-            .style('margin-bottom', '0');
-        ramaForm.on('change', () => {
-            RamachandranComponent.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
+        // let ramaForm = d3.select('#rama-settings').append('form')
+        //     .attr('id', 'rama-contour-style')
+        //     .style('position', 'absolute')
+        //     .style('margin', '5px');
+        // ramaForm.append('input')
+        //     .classed('form-check-input', true)
+        //     .attr('type', 'radio')
+        //     .attr('name', 'contour-style')
+        //     .attr('value', 1)
+        //     .attr('checked', true)
+        //     .classed('rama-contour-radio', true);
+        // ramaForm.append('label').classed('rama-contour-style', true).text('Contour')
+        //     .attr('class', 'hint--right')
+        //     .attr('data-hint', 'Regions are displayed using lines.')
+        //     .style('margin-bottom', '0');
+        // ramaForm.append('br');
+        //
+        // ramaForm.append('input')
+        //     .classed('form-check-input', true)
+        //     .attr('type', 'radio')
+        //     .attr('name', 'contour-style')
+        //     .attr('value', 2)
+        //     .classed('rama-contour-radio', true);
+        // ramaForm.append('label').classed('rama-contour-style', true).text('Heat Map')
+        //     .attr('class', 'hint--right')
+        //     .attr('data-hint', 'Regions are displayed heat map.')
+        //     .style('margin-bottom', '0');
+        //
+        //
+        // ramaForm.on('change', () => {
+        //     RamachandranComponent.contourColoringStyle = parseInt(d3.select('input[name="contour-style"]:checked').property('value'));
+        //     RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+        // });
+        let ramaForm = d3.select('#rama-settings').append('div').style('display', 'inline-block')
+            .style('vertical-align', 'middle')
+            .html(`
+            <label class="switch" style="margin-top: 5px; margin-bottom: 0" id="contour-changer-label">
+                <input type="checkbox" checked id="rama-contour-changer">
+                <span class="slider contour round"></span>
+                <span class="absolute-no">Heat Map</span>
+            </label>
+            <br>
+             <label class="switch" style="margin-bottom: 1px">
+                <input type="checkbox" checked id="rama-outlier-changer">
+                <span class="slider outlier round"></span>
+                <span class="absolute-no">Outliers</span>
+            </label>`);
+        d3.select('#rama-contour-changer').on('change', () => {
+            const node = document.getElementById("rama-contour-changer");
+            if (node.checked)
+                RamachandranComponent.contourColoringStyle = 1;
+            else
+                RamachandranComponent.contourColoringStyle = 2;
             RamachandranComponent.baseContours(this.ramaContourPlotType, RamachandranComponent.contourColoringStyle);
+        });
+        d3.select('#rama-outlier-changer').on('change', () => {
+            const node = document.getElementById("rama-outlier-changer");
+            if (node.checked) {
+                d3.selectAll('path.nonOutlier').style('display', 'block');
+                return;
+            }
+            d3.selectAll('path.nonOutlier').style('display', 'none');
         });
         let chainsString = '';
         if (this.chainsToShow.length > 2) {
@@ -356,8 +417,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         else
             modelsString = this.modelsToShow.toString();
         let entryInfo = d3.select('#rama-settings').append('div').style('display', 'inline-block')
-            .style('position', 'absolute')
-            .style('width', '25%').style('margin', '5px 5px 5px 95px');
+            .style('vertical-align', 'middle').style('margin-left', '50px');
         let chainsInfo = entryInfo.append('div');
         chainsInfo.attr('id', 'rama-info-chains')
             .append('b').text('Chains: ').style('margin-right', '5px');
@@ -496,9 +556,11 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             d3.select(`#${node.idSelector}`)
                 .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, true))
                 .style('fill', node.residueColor)
-                .style('opacity', 1);
+                .style('opacity', RamachandranComponent.computeOpacity(node.residueColor));
         }
         function selectNode(node) {
+            if (RamachandranComponent.selectedNode)
+                deselectNode(RamachandranComponent.selectedNode);
             RamachandranComponent.selectedNode = node;
             d3.select(`#${node.idSelector}`)
                 .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false))
@@ -512,6 +574,9 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .append('g')
                 .attr('class', 'dataGroup')
                 .append('path')
+                .classed('nonOutlier', (residue) => {
+                return residue.rama != 'OUTLIER';
+            })
                 .attr('id', (residue) => {
                 const id = `${residue.aa}-${residue.chainId}-${residue.modelId}-${residue.authorResNum}-${residue.pdbId}`;
                 // residue.aa + '-' + residue.chainId + '-' + residue.modelId + '-' + residue.num + residue.pdbId;
@@ -747,16 +812,22 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
          * @param event
          */
         function unHighlightObject(event) {
+            let node = d3.select('.selected-res');
+            if (node)
+                node.classed('selected-res', false)
+                    .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
+                    .style('fill', (residue) => fillColorFunction(residue, residueColorStyle))
+                    .style('display', 'block')
+                    .style('opacity', (residue) => {
+                    return RamachandranComponent.computeOpacity(residue.residueColor);
+                });
             if (typeof event.eventData != 'undefined') {
-                if (RamachandranComponent.highlightedResidues.indexOf(getResidueNode(event)) == -1) {
-                    d3.select('.selected-res')
-                        .classed('selected-res', false)
-                        .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
-                        .style('fill', (residue) => fillColorFunction(residue, residueColorStyle))
-                        .style('display', 'block');
-                    // .style('opacity', (d) => {
-                    //     return RamachandranComponent.computeOpacity(fillColorFunction(d, drawingType, outliersType, rsrz))
-                    // });
+                let onMouseNode = getResidueNode(event);
+                if (RamachandranComponent.highlightedResidues.indexOf(onMouseNode) == -1) {
+                    if (onMouseNode && onMouseNode.classed('clicked-res')) {
+                        onMouseNode.style('fill', 'magenta');
+                        return;
+                    }
                 }
             }
         }
@@ -766,22 +837,50 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
          */
         function onClick(event) {
             const res = getResidueNode(event);
+            if (event.type == 'PDB.litemol.click') {
+                const node = getResidueNode(event);
+                const highlightedNode = d3.select('.clicked-res');
+                if (node == highlightedNode) {
+                    node.classed('clicked-res', false)
+                        .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue))
+                        .transition()
+                        .duration(50)
+                        .style('fill', (residue) => fillColorFunction(residue, residueColorStyle))
+                        .style('display', 'block')
+                        .style('opacity', (residue) => {
+                        return RamachandranComponent.computeOpacity(residue.residueColor);
+                    });
+                }
+                else if (node) {
+                    node.attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false))
+                        .classed('clicked-res', true)
+                        .style('fill', 'magenta')
+                        .style('opacity', '1');
+                }
+                if (highlightedNode) {
+                    highlightedNode.classed('clicked-res', false)
+                        .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue))
+                        .transition()
+                        .duration(50)
+                        .style('fill', (residue) => fillColorFunction(residue, residueColorStyle))
+                        .style('display', 'block')
+                        .style('opacity', (residue) => {
+                        return RamachandranComponent.computeOpacity(residue.residueColor);
+                    });
+                }
+            }
             if (RamachandranComponent.highlightedResidues.length != 0) {
                 RamachandranComponent.highlightedResidues.forEach((node) => {
                     node.attr('d', (residue) => RamachandranComponent.changeObjectSize(residue)).transition().duration(50)
                         .style('fill', (residue) => fillColorFunction(residue, residueColorStyle))
-                        .style('display', 'block');
-                    // .style('opacity', (d) => {
-                    //     return RamachandranComponent.computeOpacity(fillColorFunction(d, drawingType, outliersType, rsrz))
-                    // });
+                        .style('display', 'block')
+                        .style('opacity', (residue) => {
+                        return RamachandranComponent.computeOpacity(residue.residueColor);
+                    });
                 });
                 RamachandranComponent.highlightedResidues.pop();
             }
             RamachandranComponent.highlightedResidues.push(res);
-            getResidueNode(event).attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false))
-                .classed('selected-res', false)
-                .style('fill', 'magenta')
-                .style('opacity', '1');
         }
         /**
          * return residue node from event
@@ -789,17 +888,11 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
          * @returns {Selection}
          */
         function getResidueNode(event) {
-            if (typeof event.eventData.chainId == 'undefined')
+            if (event.eventData.residueNumber == 0 || typeof event.eventData.chainId == 'undefined')
                 return null;
-            console.log(`path#${event.eventData.residueName}-
-            ${event.eventData.chainId}-
-            ${event.eventData.entityId}-
-            ${event.eventData.residueNumber + RamachandranComponent.resNumDifference}`);
-            return d3.select('path#' +
-                event.eventData.residueName + '-' +
-                event.eventData.chainId + '-' +
-                event.eventData.entityId + '-' +
-                event.eventData.residueNumber);
+            const selectedNode = d3.select(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber + RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
+            if (selectedNode)
+                return selectedNode;
         }
         /**
          * highlight residue from event
@@ -808,8 +901,10 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         function highLightObject(event) {
             let res = getResidueNode(event);
             if (res) {
-                res.attr('d', (d) => RamachandranComponent.changeObjectSize(d, false))
-                    .classed('selected-res', true)
+                if (res.classed('clicked-res'))
+                    return;
+                res.classed('selected-res', true)
+                    .attr('d', (d) => RamachandranComponent.changeObjectSize(d, false))
                     .style('fill', 'yellow')
                     .style('opacity', '1');
                 // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
@@ -850,13 +945,19 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 let res = getResidueNode(event);
                 if (res) {
                     if (res.attr('style').includes('magenta')) {
+                        res.style('fill', 'yellow');
                         return;
                     }
                 }
                 unHighlightObject(event);
                 highLightObject(event);
             }
-            else {
+            if (Object.keys(event.eventData).length === 0 && event.eventData.constructor === Object) {
+                const node = d3.select('.clicked-res');
+                if (node) {
+                    node.style('fill', 'magenta');
+                    return;
+                }
                 unHighlightObject(event);
             }
         });
@@ -1285,9 +1386,11 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 .style('height', RamachandranComponent.tooltipHeight)
                 .style('width', String(RamachandranComponent.tooltipWidth) + 'px');
         }
-        d3.select(`#${residue.idSelector}`)
-            .attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false))
-            .style('fill', highlightColor)
+        const node = d3.select(`#${residue.idSelector}`);
+        if (!node.classed('clicked-res')) {
+            node.attr('d', (residue) => RamachandranComponent.changeObjectSize(residue, false));
+        }
+        node.style('fill', highlightColor)
             .style('opacity', 1);
         // .style('fill', (dat) => fillColorFunction(dat, drawingType, outliersType, rsrz));
     }
@@ -1305,14 +1408,13 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         if (RamachandranComponent.highlightedResidues.indexOf(residue) > -1) {
             return;
         }
-        if (residue == RamachandranComponent.selectedNode) {
-            d3.select(`#${residue.idSelector}`)
-                .transition()
+        const node = d3.select(`#${residue.idSelector}`);
+        if (residue == RamachandranComponent.selectedNode || node.classed('clicked-res')) {
+            node.transition()
                 .style('fill', 'magenta');
         }
         else {
-            d3.select(`#${residue.idSelector}`)
-                .transition()
+            node.transition()
                 .attr('d', (dat) => RamachandranComponent.changeObjectSize(dat))
                 .style('opacity', () => {
                 return RamachandranComponent.computeOpacity(residue.residueColor);

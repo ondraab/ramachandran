@@ -164,6 +164,119 @@ button.dropdown-toggle {
   padding-right: 2px;
 }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 100px;
+  height: 20px;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f2f2f2;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  z-index: 2;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: darkslategrey;
+  -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.22);
+  -webkit-transition: .4s;
+  transition: all 0.4s ease-in-out;
+}
+.slider.outlier:after {
+  content: "All residues";
+}
+
+.slider.contour:after {
+  content: "Contours"
+}
+
+.slider:after {
+  position: absolute;
+  left: 0;
+  z-index: 1;
+
+  /*font-size: 45px;*/
+  text-align: left !important;
+  /*line-height: 95px;*/
+  padding-left: 0;
+  width: 120px;
+  color: #fff;
+  height: 30px;
+  border-radius: 5px;
+  background-color: #50baff;
+  -webkit-transform: translateX(-120px);
+  -ms-transform: translateX(-120px);
+  transform: translateX(-120px);
+  transition: all 0.4s ease-in-out;
+}
+
+input:checked + .slider:after {
+  -webkit-transform: translateX(0px);
+  -ms-transform: translateX(0px);
+  transform: translateX(0px);
+  /*width: 235px;*/
+  padding-left: 10px;
+}
+
+input:checked + .slider:before {
+  background-color: #fff;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(80px);
+  -ms-transform: translateX(80px);
+  transform: translateX(80px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 15px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+.absolute-no {
+  position: absolute;
+  left: 10px;
+  color: darkslategrey;
+  text-align: right !important;
+  /*font-size: 45px;*/
+  width: calc(100% - 25px);
+  height: 30px;
+  /*line-height: 95px;*/
+  cursor: pointer;
+}
+
+#rama-overlay-help {
+  position: fixed; /* Sit on top of the page content */
+  display: none; /* Hidden by default */
+  top: 0;
+  left: 0;
+  margin: 10px 0 0 5px;
+  background-color: rgba(0, 0, 0, 0.66); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+
 @media only screen and (min-width: 768px) {
   /* For desktop: */
   .rama-root {
