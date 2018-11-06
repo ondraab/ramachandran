@@ -780,12 +780,17 @@ class RamachandranComponent extends PolymerElement {
                 .on('click', function (node: Residue) {
                     if(node == RamachandranComponent.selectedNode)
                         deselectNode(node);
-                    else
+                    else {
                         selectNode(node);
+                        RamachandranComponent.dispatchCustomEvent('PDB.ramaViewer.click', node, node.pdbId);
+                    }
                 })
         }
 
-        RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num;
+        templatePdbResidues[0].authorResNum > templatePdbResidues[0].num ?
+            RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num :
+            RamachandranComponent.resNumDifference = templatePdbResidues[0].num-templatePdbResidues[0].authorResNum;
+
         addResiduesToCanvas(templatePdbResidues);
 
         let otherResidues = [];
@@ -1131,6 +1136,7 @@ class RamachandranComponent extends PolymerElement {
             }
         });
         window.addEventListener('PDB.litemol.mouseover', (event: any) => {
+            console.log(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber + RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
             if (typeof event.eventData != 'undefined') {
                 let res = getResidueNode(event);
                 if (res) {
@@ -1414,7 +1420,7 @@ class RamachandranComponent extends PolymerElement {
         const event = new CustomEvent(name, {detail: {
                 chainId: residue.chainId,
                 entityId: residue.modelId,
-                entry: pdbId,
+                entryId: pdbId,
                 residueName: residue.aa,
                 residueNumber: residue.authorResNum}});
         window.dispatchEvent(event);
