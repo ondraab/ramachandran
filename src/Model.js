@@ -1,6 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Model {
+    get residuesDict() {
+        return this._residuesDict;
+    }
+    set residuesDict(value) {
+        this._residuesDict = value;
+    }
     get modelId() {
         return this._modelId;
     }

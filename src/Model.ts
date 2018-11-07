@@ -1,6 +1,14 @@
 import {Residue} from "./Residue";
+import {Chain} from "./Chain";
 
 export class Model {
+    get residuesDict(): { [p: string]: Residue } {
+        return this._residuesDict;
+    }
+
+    set residuesDict(value: { [p: string]: Residue }) {
+        this._residuesDict = value;
+    }
     get modelId(): number {
         return this._modelId;
     }
@@ -18,7 +26,7 @@ export class Model {
     }
     private _modelId: number;
     private _residues: Residue[];
-
+    private _residuesDict: {[id: string]: Residue;};
 
     constructor(modelId: number, residues: Residue[]) {
         this._modelId = modelId;

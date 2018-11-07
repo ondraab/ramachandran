@@ -8,6 +8,7 @@ class ParsePDB {
     constructor(pdb) {
         this._rsrz = {};
         this._outlDict = {};
+        this._moleculesDict = {};
         this._pdbID = pdb.toLowerCase();
         this._molecules = [];
         this._chainsArray = [];
@@ -19,6 +20,12 @@ class ParsePDB {
         this._clashes = 0;
         this._outliersList = [];
         this._residueOnCanvas = 0;
+    }
+    get moleculesDict() {
+        return this._moleculesDict;
+    }
+    set moleculesDict(value) {
+        this._moleculesDict = value;
     }
     get residueOnCanvas() {
         return this._residueOnCanvas;
@@ -107,6 +114,9 @@ class ParsePDB {
         }
     }
     parse(molecules) {
+        let chainsDict = {};
+        let residuesDict = {};
+        let modelsDict = {};
         for (const mol of molecules.molecules) {
             let chains = [];
             for (const chain of mol.chains) {
@@ -134,6 +144,8 @@ class ParsePDB {
                             default:
                                 break;
                         }
+                        residue.idSelector = `${residue.aa}-${residue.chainId}-${residue.modelId}-${residue.authorResNum}-${residue.pdbId}`;
+                        residuesDict[residue.authorResNum] = residue;
                         residues.push(residue);
                     }
                     residues.sort((a, b) => {
@@ -148,6 +160,8 @@ class ParsePDB {
                             value.prePro = true;
                         }
                     });
+                    mod.residuesDict = residuesDict;
+                    modelsDict[mod.model_id] = mod;
                     models.push(new Model_1.Model(mod.model_id, residues));
                 }
                 models.sort((a, b) => {
@@ -157,6 +171,8 @@ class ParsePDB {
                         return 1;
                     return 0;
                 });
+                chain.modelsDict = modelsDict;
+                chainsDict[chain.chain_id] = chain;
                 chains.push(new Chain_1.Chain(chain.chain_id, models));
             }
             chains.sort((a, b) => {
@@ -166,6 +182,8 @@ class ParsePDB {
                     return 1;
                 return 0;
             });
+            mol.chainsDict = chainsDict;
+            this.moleculesDict[mol.entity_id] = mol;
             this._molecules.push(new Molecule_1.Molecule(mol.entity_id, chains, this._pdbID));
         }
         this._molecules.sort((a, b) => {

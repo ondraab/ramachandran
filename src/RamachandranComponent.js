@@ -634,6 +634,7 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
                 }
             });
         }
+        // console.log();
         templatePdbResidues[0].authorResNum > templatePdbResidues[0].num ?
             RamachandranComponent.resNumDifference = templatePdbResidues[0].authorResNum - templatePdbResidues[0].num :
             RamachandranComponent.resNumDifference = templatePdbResidues[0].num - templatePdbResidues[0].authorResNum;
@@ -894,7 +895,8 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
         function getResidueNode(event) {
             if (event.eventData.residueNumber == 0 || typeof event.eventData.chainId == 'undefined')
                 return null;
-            const selectedNode = d3.select(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber + RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
+            const selectedNode = d3.select(`path#${RamachandranComponent.parsedPdb[0]._moleculesDict[1].chainsDict[event.eventData.chainId].modelsDict[event.eventData.entityId].residuesDict[event.eventData.residueNumber].idSelector}`);
+            // const selectedNode = d3.select(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber+RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
             if (selectedNode)
                 return selectedNode;
         }
@@ -945,7 +947,6 @@ class RamachandranComponent extends polymer_element_js_1.PolymerElement {
             }
         });
         window.addEventListener('PDB.litemol.mouseover', (event) => {
-            console.log(`path#${event.eventData.residuesName}-${event.eventData.chainId}-${event.eventData.entityId}-${event.eventData.residueNumber + RamachandranComponent.resNumDifference}-${event.eventData.entryId.toLowerCase()}`);
             if (typeof event.eventData != 'undefined') {
                 let res = getResidueNode(event);
                 if (res) {

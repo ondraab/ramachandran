@@ -2,9 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 class Molecule {
     constructor(entityId, chains, pdbId) {
+        this._chainsDict = {};
         this._entityId = entityId;
         this._chains = chains;
         this._pdbId = pdbId;
+    }
+    get chainsDict() {
+        return this._chainsDict;
+    }
+    set chainsDict(value) {
+        this._chainsDict = value;
     }
     get pdbId() {
         return this._pdbId;

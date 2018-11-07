@@ -1,9 +1,16 @@
 import {Model} from "./Model";
 
 export class Chain {
+    get modelsDict(): { [p: string]: Model } {
+        return this._modelsDict;
+    }
+
+    set modelsDict(value: { [p: string]: Model }) {
+        this._modelsDict = value;
+    }
     private _chainId: string;
     private _models: Model[];
-
+    private _modelsDict: {[id: string]: Model} = {};
 
     get chainId(): string {
         return this._chainId;

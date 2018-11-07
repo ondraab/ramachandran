@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Chain {
+    constructor(chainId, models) {
+        this._modelsDict = {};
+        this._chainId = chainId;
+        this._models = models;
+    }
+    get modelsDict() {
+        return this._modelsDict;
+    }
+    set modelsDict(value) {
+        this._modelsDict = value;
+    }
     get chainId() {
         return this._chainId;
     }
@@ -12,10 +23,6 @@ class Chain {
     }
     set models(value) {
         this._models = value;
-    }
-    constructor(chainId, models) {
-        this._chainId = chainId;
-        this._models = models;
     }
 }
 exports.Chain = Chain;
